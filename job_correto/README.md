@@ -95,11 +95,17 @@ curl -X PUT http://localhost:5000/api/usuarios/1 \
 
 # Novas funcionalidades
 avaliação de curriculo com ia
+
 gerar perguntas com ia
+
 escolher area de gerar poergfuntas 
+
 gerar avaliação das respostas das perguntas com ia
+
 simulação de entrevista com ia 
+
 avaliação de respostas da entrevista com ia 
+
 feedback da entrevista com ia 
 
 
