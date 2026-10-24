@@ -110,6 +110,7 @@ feedback da entrevista com ia
 
 
 6. Integrantes do grupo
+
 Julio Bravim
 
 Lucas Tolentino
