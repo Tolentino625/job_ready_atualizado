@@ -109,12 +109,15 @@ avaliação de respostas da entrevista com ia
 feedback da entrevista com ia 
 
 
-# Excluir usuário (id 1)
-curl -X DELETE http://localhost:5000/api/usuarios/1
 6. Integrantes do grupo
 Julio Bravim
+
 Lucas Tolentino
+
 Arthur de Souza
+
 Diogo Figueiredo
+
 Joao Senna
-Felipe Gabriel
+
+Filipe Gabriel
