@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobReady — Lembretes de estudo e preparação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar" data-active="lembretes"></aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Lembretes de estudo e preparação</h1>
+        <p>Organize seus estudos e lembre-se dos próximos passos para sua preparação.</p>
+      </div>
+      <button class="btn btn-primary" id="btn-novo" type="button">+ Novo lembrete</button>
+    </div>
+
+    <div class="alert" id="crud-alert" style="display:none;"></div>
+
+    <table id="crud-table">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Descrição</th>
+          <th>Data</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="empty-state" id="empty-state" style="display:none;">
+      Nenhum lembrete cadastrado ainda. Clique em “+ Novo lembrete” para criar o primeiro.
+    </div>
+
+    <div class="modal-backdrop" id="crud-modal-backdrop">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="crud-modal-title">
+        <h2 id="crud-modal-title">Novo lembrete</h2>
+        <form id="crud-form">
+          <div class="field">
+            <label for="titulo">Título</label>
+            <input id="titulo" type="text" name="titulo" maxlength="150"
+                   placeholder="Ex.: Revisar perguntas de entrevista" required>
+          </div>
+
+          <div class="field">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" name="descricao" maxlength="2000"
+                      placeholder="Descreva o que você precisa estudar ou preparar..."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="data">Data</label>
+            <input id="data" type="date" name="data" required>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="btn-cancelar">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/crud.js"></script>
+<script>
+function formatarData(data) {
+  if (!data) return "—";
+  const [ano, mes, dia] = data.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
+initCrudPage({
+  resourcePath: "/api/lembretes",
+  singular: "Lembrete",
+  columns: [
+    { key: "titulo", label: "Título" },
+    { key: "descricao", label: "Descrição" },
+    { key: "data", label: "Data", render: item => formatarData(item.data) }
+  ],
+  fields: [
+    { name: "titulo", type: "text" },
+    { name: "descricao", type: "textarea" },
+    { name: "data", type: "date" }
+  ],
+});
+</script>
+</body>
+</html>

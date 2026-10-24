@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobReady — Entrevistas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar" data-active="entrevistas"></aside>
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Entrevistas</h1>
+        <p>Simulações de entrevista realizadas pelos usuários.</p>
+      </div>
+      <a class="btn btn-ai" href="simulacao.html" style="text-decoration:none;">Simulação</a>
+    </div>
+
+    <div class="alert" id="crud-alert" style="display:none;"></div>
+
+    <table id="crud-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tipo</th>
+          <th>Status</th>
+          <th>Pontuação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="empty-state" id="empty-state" style="display:none;">Nenhum registro cadastrado ainda.</div>
+  </main>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/crud.js"></script>
+<script>
+const TIPOS_ROTULO = {
+  simulacao_cronometrada: "Simulação",
+  pratica_perguntas: "Prática de perguntas",
+};
+const ehSimulacao = (e) => e.tipo === "simulacao_cronometrada";
+
+initCrudPage({
+  // Para simulações: "Rever" (abre o resultado) e "Tentar novamente" (mesmas
+  // perguntas e mesmo tempo, em uma nova tentativa). Se ainda está em
+  // andamento, em vez disso aparece "Continuar".
+  extraActions: (e) => {
+    if (!ehSimulacao(e)) return "";
+    if (e.status === "em_andamento") {
+      return `<button class="btn btn-ai btn-sm" data-action="rever" data-id="${e.id}">Continuar</button>`;
+    }
+    if (e.status !== "concluida") return "";
+    return `
+      <button class="btn btn-secondary btn-sm" data-action="rever" data-id="${e.id}">Rever</button>
+      <button class="btn btn-ai btn-sm" data-action="refazer" data-id="${e.id}">Tentar novamente</button>`;
+  },
+  onAction: async (acao, entrevista, botao) => {
+    if (!entrevista) return;
+    if (acao === "rever") {
+      window.location.href = `simulacao.html?id=${entrevista.id}`;
+    } else if (acao === "refazer") {
+      botao.disabled = true;
+      botao.textContent = "Preparando…";
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/simulacoes/${entrevista.id}/refazer`, {
+          method: "POST",
+          headers: authHeaders(),
+        });
+        const payload = await res.json();
+        if (!res.ok) throw new Error(payload.erro || "Não foi possível iniciar uma nova tentativa.");
+        window.location.href = `simulacao.html?id=${payload.id}`;
+      } catch (err) {
+        const box = document.getElementById("crud-alert");
+        box.textContent = err.message;
+        box.className = "alert alert-error";
+        box.style.display = "block";
+        botao.disabled = false;
+        botao.textContent = "Tentar novamente";
+      }
+    }
+  },
+  resourcePath: "/api/entrevistas",
+  singular: "Entrevista",
+  semEditar: true,
+  columns: [
+    { key: "id", label: "ID" },
+    { key: "tipo", label: "Tipo", render: (e) => TIPOS_ROTULO[e.tipo] || e.tipo },
+    { key: "status", label: "Status" },
+    { key: "pontuacao_geral", label: "Pontuação" }
+  ],
+});
+</script>
+</body>
+</html>

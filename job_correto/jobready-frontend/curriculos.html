@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobReady — Currículos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  /* ---------- Resumo ---------- */
+  .cv-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .cv-stat { background: var(--card); border-radius: 12px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(18,33,58,.08); }
+  .cv-stat .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .cv-stat .valor { font: 600 26px 'Fraunces', Georgia, serif; color: var(--navy); margin-top: 4px; }
+  .cv-stat .valor small { font: 500 13px Inter, sans-serif; color: var(--muted); }
+
+  /* ---------- Cartão de currículo ---------- */
+  .cv-card { background: var(--card); border-radius: 12px; padding: 24px 26px; box-shadow: 0 1px 3px rgba(18,33,58,.08); margin-bottom: 18px; position: relative; }
+  .cv-head { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+
+  .score-circle { width: 92px; height: 92px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--navy); color: #fff; flex-shrink: 0; }
+  .score-circle strong { font: 600 29px 'Fraunces', serif; line-height: 1; }
+  .score-circle small { font-size: 11px; opacity: .8; margin-top: 3px; }
+  .score-circle.alta { background: var(--sage); }
+  .score-circle.media { background: var(--gold); }
+  .score-circle.baixa { background: var(--danger); }
+  .score-circle.vazia { background: transparent; border: 2px dashed var(--border); color: var(--muted); }
+  .score-circle.vazia strong { font-size: 24px; }
+
+  .cv-info { flex: 1; min-width: 220px; }
+  .cv-nome { font: 600 20px 'Fraunces', Georgia, serif; color: var(--navy); margin: 0 0 6px; word-break: break-word; }
+  .cv-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+  .badge-nivel { color: #fff; }
+  .badge-nivel.alta { background: var(--sage); }
+  .badge-nivel.media { background: var(--gold); }
+  .badge-nivel.baixa { background: var(--danger); }
+  .badge-link { border: none; cursor: pointer; font-family: inherit; }
+  .badge-link:hover { background: #E4DFD3; }
+
+  .cv-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+
+  /* ---------- Resultado da avaliação ---------- */
+  .cv-body { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .cv-geral { margin: 0 0 16px; font-size: 14px; line-height: 1.6; }
+  .cv-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .cv-box { border: 1px solid var(--border); border-left-width: 4px; border-radius: 10px; padding: 14px 16px; background: #FDFCFA; }
+  .cv-box.fortes { border-left-color: var(--sage); }
+  .cv-box.melhorar { border-left-color: var(--gold); }
+  .cv-box h3 { margin: 0 0 8px; font: 600 11px Inter, sans-serif; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .cv-box p { margin: 0; font-size: 14px; line-height: 1.6; white-space: pre-wrap; color: #333; }
+  .cv-box p.vazio { color: var(--muted); font-style: italic; }
+  .cv-hint { margin: 0; padding: 14px 16px; border-radius: 10px; background: #FBF7EE; color: #7A5E27; font-size: 13px; line-height: 1.5; }
+  .cv-hint.stale { background: #FBEAE4; color: var(--danger); }
+
+  .cv-loading { position: absolute; inset: 0; background: rgba(255,255,255,.88); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--muted); font-size: 14px; z-index: 2; }
+  .spinner { width: 32px; height: 32px; border: 3px solid #EFEAE0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .cv-vazio { background: var(--card); border-radius: 12px; padding: 54px 24px; text-align: center; box-shadow: 0 1px 3px rgba(18,33,58,.08); }
+  .cv-vazio .icone { font-size: 38px; margin-bottom: 10px; }
+  .cv-vazio h2 { margin: 0 0 6px; font-size: 20px; color: var(--navy); }
+  .cv-vazio p { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+
+  /* ---------- Formulário (modal) ---------- */
+  .file-picker { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .file-picker input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+  .file-picker .file-picker-label { display: inline-block; width: auto; margin: 0; padding: 9px 14px; border: 1px dashed var(--navy); border-radius: 8px; color: var(--navy); background: #FDFCFA; cursor: pointer; font-size: 13px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+  .file-picker .file-picker-label:hover { background: #EFEAE0; }
+  .file-picker #file-name { font-size: 13px; color: var(--muted); word-break: break-all; }
+  .field-help { display: block; margin-top: 6px; font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .nota-linha { display: flex; align-items: center; gap: 10px; }
+
+  @media (max-width: 760px) {
+    .cv-cols { grid-template-columns: 1fr; }
+    .cv-actions { margin-left: 0; }
+    .cv-card { padding: 20px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar" data-active="curriculos"></aside>
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Currículos</h1>
+        <p>Envie seu currículo e receba uma nota de 0 a 10 com pontos fortes e sugestões de melhoria.</p>
+      </div>
+      <button class="btn btn-primary" id="btn-novo">+ Novo</button>
+    </div>
+
+    <div class="alert" id="crud-alert" style="display:none;"></div>
+
+    <div class="cv-stats" id="cv-stats" style="display:none;"></div>
+    <div id="cv-lista"></div>
+
+    <div class="modal-backdrop" id="crud-modal-backdrop">
+      <div class="modal">
+        <h2 id="crud-modal-title">Novo Currículo</h2>
+        <form id="curriculo-form">
+          <div class="field">
+            <label>Anexo do currículo</label>
+            <div class="file-picker">
+              <input id="arquivo" type="file" name="arquivo" accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.txt,.rtf,.odt,.heic">
+              <label for="arquivo" class="file-picker-label">Escolher arquivo</label>
+              <span id="file-name">Nenhum arquivo selecionado</span>
+            </div>
+            <small class="field-help">PDF, imagens ou documentos. Tamanho máximo: 10 MB. Para a IA ler o currículo, prefira PDF ou imagem.</small>
+          </div>
+
+          <div class="field">
+            <label>Conteúdo extraído / observações</label>
+            <textarea name="conteudo_texto" placeholder="Opcional"></textarea>
+          </div>
+          <div class="field" id="nota-ia-field" style="display:none;">
+            <label>Nota da IA</label>
+            <div id="nota-ia-valor" class="nota-linha"></div>
+            <small class="field-help">Gerada por "Avaliar com IA". Se você alterar o anexo ou o texto do currículo, ela é descartada e precisa ser reavaliada.</small>
+          </div>
+          <div class="field">
+            <label>Pontos fortes</label>
+            <textarea name="pontos_fortes" placeholder="Opcional"></textarea>
+            <small class="field-help">Preenchido automaticamente ao usar "Avaliar com IA", mas pode ser editado.</small>
+          </div>
+          <div class="field">
+            <label>Pontos a melhorar</label>
+            <textarea name="pontos_a_melhorar" placeholder="Opcional"></textarea>
+            <small class="field-help">Preenchido automaticamente ao usar "Avaliar com IA", mas pode ser editado.</small>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="btn-cancelar">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btn-salvar">Salvar currículo</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script>
+if (exigirLogin()) {
+  const apiUrl = `${API_BASE_URL}/api/curriculos`;
+  const listaEl = document.getElementById("cv-lista");
+  const statsEl = document.getElementById("cv-stats");
+  const modalBackdrop = document.getElementById("crud-modal-backdrop");
+  const modalTitle = document.getElementById("crud-modal-title");
+  const form = document.getElementById("curriculo-form");
+  const alertBox = document.getElementById("crud-alert");
+  const btnSalvar = document.getElementById("btn-salvar");
+  const fileInput = document.getElementById("arquivo");
+  const fileName = document.getElementById("file-name");
+  let items = [];
+  let editingId = null;
+  let avaliandoIds = new Set();
+  let destaqueId = null;
+
+  const MARCADOR_GERAL = "Avaliação geral:";
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+  }
+
+  function showAlert(msg, type = "error") {
+    alertBox.textContent = msg;
+    alertBox.className = `alert alert-${type}`;
+    alertBox.style.display = "block";
+    clearTimeout(showAlert.timer);
+    showAlert.timer = setTimeout(() => alertBox.style.display = "none", 5000);
+  }
+
+  // O backend devolve datas em UTC sem fuso ("2026-10-22T23:00:00"): sem o "Z"
+  // o navegador as leria como horário local e mostraria 3 h a mais no Brasil.
+  function formatDate(value) {
+    if (!value) return "—";
+    const date = new Date(/(Z|[+-]\d\d:?\d\d)$/.test(value) ? value : `${value}Z`);
+    return Number.isNaN(date.getTime())
+      ? value
+      : date.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+  }
+
+  const fmtNota = (n) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+  const temNota = (i) => i.nota_ia !== null && i.nota_ia !== undefined;
+  const nivel = (n) => (n >= 7 ? "alta" : n >= 5 ? "media" : "baixa");
+  const rotuloNivel = (n) => (n >= 8.5 ? "Excelente" : n >= 7 ? "Bom" : n >= 5 ? "Regular" : "Precisa melhorar");
+
+  function notaBadge(nota) {
+    return `<span class="badge badge-nivel ${nivel(nota)}" style="font-size:12px;">${fmtNota(nota)}/10 · ${rotuloNivel(nota)}</span>`;
+  }
+
+  // A avaliação da IA guarda o parágrafo "Avaliação geral: ..." no fim de
+  // "pontos a melhorar". Aqui separamos os dois só para exibir melhor.
+  function separarGeral(texto) {
+    const t = String(texto ?? "");
+    const pos = t.indexOf(MARCADOR_GERAL);
+    if (pos === -1) return { melhorar: t.trim(), geral: "" };
+    return { melhorar: t.slice(0, pos).trim(), geral: t.slice(pos + MARCADOR_GERAL.length).trim() };
+  }
+
+  function renderResumo() {
+    if (!items.length) { statsEl.style.display = "none"; return; }
+    const notas = items.filter(temNota).map((i) => i.nota_ia);
+    const melhor = notas.length ? Math.max(...notas) : null;
+    const media = notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : null;
+    const stat = (label, valor, extra = "") =>
+      `<div class="cv-stat"><div class="label">${label}</div><div class="valor">${valor}${extra}</div></div>`;
+    statsEl.innerHTML =
+      stat("Currículos", items.length) +
+      stat("Avaliados pela IA", notas.length, `<small> / ${items.length}</small>`) +
+      stat("Melhor nota", melhor !== null ? fmtNota(melhor) : "—", melhor !== null ? "<small> /10</small>" : "") +
+      stat("Nota média", media !== null ? fmtNota(Math.round(media * 10) / 10) : "—", media !== null ? "<small> /10</small>" : "");
+    statsEl.style.display = "grid";
+  }
+
+  function renderCard(item) {
+    const avaliado = temNota(item);
+    const temTexto = !!(item.pontos_fortes || item.pontos_a_melhorar);
+    const { melhorar, geral } = separarGeral(item.pontos_a_melhorar);
+    const avaliando = avaliandoIds.has(item.id);
+
+    const circulo = avaliado
+      ? `<div class="score-circle ${nivel(item.nota_ia)}"><strong>${fmtNota(item.nota_ia)}</strong><small>de 10</small></div>`
+      : `<div class="score-circle vazia"><strong>?</strong><small>sem nota</small></div>`;
+
+    const anexo = item.tem_anexo
+      ? `<button class="badge badge-link" data-action="open-file" data-id="${item.id}" title="Abrir o anexo">📎 Abrir anexo</button>`
+      : `<span class="badge">Sem anexo</span>`;
+
+    let corpo;
+    if (temTexto) {
+      const aviso = !avaliado
+        ? `<p class="cv-hint stale" style="margin-bottom:14px;">Este currículo tem feedback, mas ainda não tem nota (a avaliação é anterior às notas ou o conteúdo mudou depois dela). Clique em <strong>Reavaliar com IA</strong> para gerar a nota.</p>`
+        : "";
+      corpo = `
+        ${aviso}
+        ${geral ? `<p class="cv-geral">${escapeHtml(geral)}</p>` : ""}
+        <div class="cv-cols">
+          <div class="cv-box fortes">
+            <h3>Pontos fortes</h3>
+            ${item.pontos_fortes ? `<p>${escapeHtml(item.pontos_fortes)}</p>` : `<p class="vazio">Nada registrado.</p>`}
+          </div>
+          <div class="cv-box melhorar">
+            <h3>A melhorar</h3>
+            ${melhorar ? `<p>${escapeHtml(melhorar)}</p>` : `<p class="vazio">Nada registrado.</p>`}
+          </div>
+        </div>`;
+    } else {
+      corpo = `<p class="cv-hint">Este currículo ainda não foi avaliado. Clique em <strong>Avaliar com IA</strong> para receber uma nota de 0 a 10, os pontos fortes e sugestões de melhoria.</p>`;
+    }
+
+    const card = document.createElement("div");
+    card.className = "cv-card" + (item.id === destaqueId ? " row-destaque" : "");
+    card.dataset.id = item.id;
+    card.innerHTML = `
+      ${avaliando ? `<div class="cv-loading"><div class="spinner"></div><strong>Avaliando seu currículo…</strong><span style="font-size:12px;">O Gemini está lendo o documento. Leva alguns segundos.</span></div>` : ""}
+      <div class="cv-head">
+        ${circulo}
+        <div class="cv-info">
+          <h2 class="cv-nome">${escapeHtml(item.nome_arquivo)}</h2>
+          <div class="cv-meta">
+            <span>#${item.id}</span><span>·</span>
+            <span>Enviado em ${escapeHtml(formatDate(item.enviado_em))}</span>
+            ${anexo}
+            ${avaliado ? notaBadge(item.nota_ia) : ""}
+          </div>
+          ${avaliado && item.avaliado_em ? `<div class="cv-meta" style="margin-top:6px;font-size:12px;">Avaliado em ${escapeHtml(formatDate(item.avaliado_em))}</div>` : ""}
+        </div>
+        <div class="cv-actions">
+          <button class="btn btn-ai btn-sm" data-action="avaliar" data-id="${item.id}">✦ ${avaliado || temTexto ? "Reavaliar" : "Avaliar"} com IA</button>
+          <button class="btn btn-secondary btn-sm" data-action="edit" data-id="${item.id}">Editar</button>
+          <button class="btn btn-danger btn-sm" data-action="delete" data-id="${item.id}">Excluir</button>
+        </div>
+      </div>
+      <div class="cv-body">${corpo}</div>`;
+    return card;
+  }
+
+  function render() {
+    renderResumo();
+    listaEl.innerHTML = "";
+    if (!items.length) {
+      listaEl.innerHTML = `
+        <div class="cv-vazio">
+          <div class="icone">📄</div>
+          <h2>Nenhum currículo por aqui ainda</h2>
+          <p>Envie seu currículo para a IA avaliar, dar uma nota e apontar o que melhorar.</p>
+          <button class="btn btn-ai" id="btn-vazio-novo">+ Enviar meu primeiro currículo</button>
+        </div>`;
+      document.getElementById("btn-vazio-novo").addEventListener("click", () => abrir());
+      return;
+    }
+    // Mais recentes primeiro.
+    [...items].sort((a, b) => b.id - a.id).forEach((item) => listaEl.appendChild(renderCard(item)));
+  }
+
+  async function carregar() {
+    try {
+      const res = await fetch(apiUrl, { headers: authHeaders() });
+      if (res.status === 401) { limparSessao(); window.location.replace("login.html"); return; }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.erro || "Não foi possível carregar os currículos.");
+      items = data;
+      render();
+    } catch (error) {
+      showAlert(error.message || `Não foi possível conectar à API em ${API_BASE_URL}.`);
+    }
+  }
+
+  function abrir(item = null) {
+    editingId = item ? item.id : null;
+    modalTitle.textContent = item ? "Editar Currículo" : "Novo Currículo";
+    form.reset();
+    fileName.textContent = "Nenhum arquivo selecionado";
+    const notaField = document.getElementById("nota-ia-field");
+    const comNota = item && temNota(item);
+    notaField.style.display = comNota ? "block" : "none";
+    if (comNota) document.getElementById("nota-ia-valor").innerHTML = notaBadge(item.nota_ia);
+    if (item) {
+      form.conteudo_texto.value = item.conteudo_texto ?? "";
+      form.pontos_fortes.value = item.pontos_fortes ?? "";
+      form.pontos_a_melhorar.value = item.pontos_a_melhorar ?? "";
+      if (item.nome_arquivo) fileName.textContent = `Anexo atual: ${item.nome_arquivo}`;
+    }
+    modalBackdrop.classList.add("open");
+  }
+
+  function fechar() {
+    modalBackdrop.classList.remove("open");
+    editingId = null;
+  }
+
+  async function salvar(event) {
+    event.preventDefault();
+    const dados = new FormData();
+    dados.append("conteudo_texto", form.conteudo_texto.value);
+    dados.append("pontos_fortes", form.pontos_fortes.value);
+    dados.append("pontos_a_melhorar", form.pontos_a_melhorar.value);
+    if (fileInput.files[0]) dados.append("arquivo", fileInput.files[0]);
+    else if (!editingId) dados.append("nome_arquivo", "curriculo-sem-anexo");
+
+    btnSalvar.disabled = true;
+    btnSalvar.textContent = "Salvando...";
+    try {
+      const url = editingId ? `${apiUrl}/${editingId}` : apiUrl;
+      const res = await fetch(url, {
+        method: editingId ? "PUT" : "POST",
+        headers: authHeaders(),
+        body: dados,
+      });
+      if (res.status === 401) { limparSessao(); window.location.replace("login.html"); return; }
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.erro || "Não foi possível salvar o currículo.");
+      showAlert(editingId ? "Currículo atualizado com sucesso." : "Currículo enviado com sucesso.", "success");
+      destaqueId = payload.id;
+      setTimeout(() => { destaqueId = null; }, 6000);
+      fechar();
+      await carregar();
+    } catch (error) {
+      showAlert(error.message || "Erro ao salvar o currículo.");
+    } finally {
+      btnSalvar.disabled = false;
+      btnSalvar.textContent = "Salvar currículo";
+    }
+  }
+
+  async function avaliarComIA(id) {
+    avaliandoIds.add(id);
+    render();
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/curriculos/${id}/avaliar`, {
+        method: "POST",
+        headers: authHeaders(),
+      });
+      if (res.status === 401) { limparSessao(); window.location.replace("login.html"); return; }
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.erro || "Não foi possível avaliar o currículo.");
+
+      const idx = items.findIndex(i => i.id === payload.id);
+      if (idx !== -1) items[idx] = payload;
+      destaqueId = payload.id;
+      setTimeout(() => { destaqueId = null; }, 6000);
+      showAlert(`Avaliação pronta: nota ${fmtNota(payload.nota_ia)}/10.`, "success");
+    } catch (error) {
+      showAlert(error.message || "Não foi possível avaliar o currículo com IA.");
+    } finally {
+      avaliandoIds.delete(id);
+      render();
+      document.querySelector(`.cv-card[data-id="${id}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+
+  async function abrirArquivo(id) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/curriculos/${id}/arquivo`, { headers: authHeaders() });
+      if (res.status === 401) { limparSessao(); window.location.replace("login.html"); return; }
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.erro || "Não foi possível abrir o anexo.");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (error) {
+      showAlert(error.message || "Não foi possível abrir o anexo.");
+    }
+  }
+
+  async function excluir(id) {
+    if (!confirm("Tem certeza que deseja excluir este currículo e seu anexo?")) return;
+    try {
+      const res = await fetch(`${apiUrl}/${id}`, { method: "DELETE", headers: authHeaders() });
+      if (res.status === 401) { limparSessao(); window.location.replace("login.html"); return; }
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.erro || "Não foi possível excluir.");
+      showAlert("Currículo excluído com sucesso.", "success");
+      carregar();
+    } catch (error) { showAlert(error.message); }
+  }
+
+  document.getElementById("btn-novo").addEventListener("click", () => abrir());
+  document.getElementById("btn-cancelar").addEventListener("click", fechar);
+  modalBackdrop.addEventListener("click", e => { if (e.target === modalBackdrop) fechar(); });
+  form.addEventListener("submit", salvar);
+  fileInput.addEventListener("change", () => {
+    fileName.textContent = fileInput.files[0] ? fileInput.files[0].name : "Nenhum arquivo selecionado";
+  });
+  listaEl.addEventListener("click", e => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const item = items.find(i => i.id === Number(btn.dataset.id));
+    if (!item) return;
+    if (btn.dataset.action === "edit") abrir(item);
+    if (btn.dataset.action === "delete") excluir(item.id);
+    if (btn.dataset.action === "open-file") abrirArquivo(item.id);
+    if (btn.dataset.action === "avaliar" && !avaliandoIds.has(item.id)) avaliarComIA(item.id);
+  });
+
+  carregar();
+}
+</script>
+</body>
+</html>

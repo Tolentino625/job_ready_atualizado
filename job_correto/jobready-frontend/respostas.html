@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobReady — Respostas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .resposta-texto { max-width: 520px; white-space: pre-wrap; word-break: break-word; line-height: 1.5; }
+  .resposta-texto.vazia { color: var(--muted); font-style: italic; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar" data-active="respostas"></aside>
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Respostas</h1>
+        <p>Histórico das suas respostas, com o ID da entrevista e da pergunta. Somente consulta.</p>
+      </div>
+    </div>
+
+    <div class="alert" id="crud-alert" style="display:none;"></div>
+
+    <table id="crud-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>ID da entrevista</th>
+          <th>ID da pergunta</th>
+          <th>Resposta</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="empty-state" id="empty-state" style="display:none;">Nenhuma resposta registrada ainda.</div>
+  </main>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/crud.js"></script>
+<script>
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
+
+// Tela somente de consulta: sem "+ Novo", sem Editar e sem Excluir.
+initCrudPage({
+  resourcePath: "/api/respostas",
+  singular: "Resposta",
+  somenteLeitura: true,
+  columns: [
+    { key: "id", label: "ID" },
+    { key: "entrevista_id", label: "ID da entrevista" },
+    { key: "pergunta_id", label: "ID da pergunta" },
+    {
+      key: "texto_resposta",
+      label: "Resposta",
+      render: (r) => {
+        const vazia = !r.texto_resposta || r.texto_resposta === "(sem resposta)";
+        return `<div class="resposta-texto ${vazia ? "vazia" : ""}">${vazia ? "Sem resposta" : escapeHtml(r.texto_resposta)}</div>`;
+      },
+    },
+    { key: "tipo", label: "Tipo" },
+  ],
+  fields: [],
+});
+</script>
+</body>
+</html>

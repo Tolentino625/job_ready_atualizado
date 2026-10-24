@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobReady — Perguntas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar" data-active="perguntas"></aside>
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Perguntas</h1>
+        <p>Banco de perguntas geradas por IA. Responda e peça uma avaliação com nota de 0 a 10.</p>
+      </div>
+      <button class="btn btn-ai" id="btn-gerar-perguntas">✦ Gerar perguntas com IA</button>
+    </div>
+
+    <div class="alert" id="crud-alert" style="display:none;"></div>
+
+    <div class="filtro-categoria">
+      <label for="filtro-categoria-select">Filtrar por categoria</label>
+      <select id="filtro-categoria-select">
+        <option value="">Todas</option>
+        <option value="comportamental">Comportamental</option>
+        <option value="tecnica">Técnica (geral)</option>
+        <option value="situacional">Situacional</option>
+        <option value="lideranca">Liderança e Gestão</option>
+        <option value="vendas">Vendas</option>
+        <option value="marketing">Marketing</option>
+        <option value="atendimento_cliente">Atendimento ao Cliente</option>
+        <option value="recursos_humanos">Recursos Humanos</option>
+        <option value="financas">Finanças e Contabilidade</option>
+        <option value="ti_programacao">TI / Programação</option>
+        <option value="dados_analytics">Dados e Analytics</option>
+        <option value="design">Design e UX</option>
+        <option value="engenharia">Engenharia</option>
+        <option value="juridico">Jurídico</option>
+        <option value="saude">Saúde</option>
+        <option value="educacao">Educação</option>
+      </select>
+    </div>
+
+    <table id="crud-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Pergunta</th>
+          <th>Categoria</th>
+          <th>Dificuldade</th>
+          <th>Sua resposta</th>
+          <th>Nota IA</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="empty-state" id="empty-state" style="display:none;">Nenhuma pergunta cadastrada ainda. Gere algumas perguntas com IA para começar.</div>
+
+    <div class="modal-backdrop" id="gerar-modal-backdrop">
+      <div class="modal">
+        <h2>Gerar perguntas com Gemini</h2>
+        <p class="modal-description">Escolha os parâmetros e o Gemini criará perguntas de entrevista automaticamente.</p>
+        <form id="gerar-form">
+          <div class="field">
+            <label>Quantidade</label>
+            <select name="quantidade">
+              <option value="3">3 perguntas</option>
+              <option value="5" selected>5 perguntas</option>
+              <option value="10">10 perguntas</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Categoria</label>
+            <select name="categoria">
+              <option value="comportamental">Comportamental</option>
+              <option value="tecnica">Técnica (geral)</option>
+              <option value="situacional">Situacional</option>
+              <option value="lideranca">Liderança e Gestão</option>
+              <option value="vendas">Vendas</option>
+              <option value="marketing">Marketing</option>
+              <option value="atendimento_cliente">Atendimento ao Cliente</option>
+              <option value="recursos_humanos">Recursos Humanos</option>
+              <option value="financas">Finanças e Contabilidade</option>
+              <option value="ti_programacao">TI / Programação</option>
+              <option value="dados_analytics">Dados e Analytics</option>
+              <option value="design">Design e UX</option>
+              <option value="engenharia">Engenharia</option>
+              <option value="juridico">Jurídico</option>
+              <option value="saude">Saúde</option>
+              <option value="educacao">Educação</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Dificuldade</label>
+            <select name="dificuldade">
+              <option value="facil">Fácil</option>
+              <option value="media" selected>Média</option>
+              <option value="dificil">Difícil</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="btn-cancelar-geracao">Cancelar</button>
+            <button type="submit" class="btn btn-ai" id="btn-confirmar-geracao">Gerar agora</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="responder-modal-backdrop">
+      <div class="modal">
+        <h2>Responder pergunta</h2>
+        <p class="modal-description" id="responder-pergunta-texto"></p>
+        <form id="responder-form">
+          <div class="field">
+            <label>Sua resposta</label>
+            <textarea name="texto_resposta" rows="6" required></textarea>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="btn-cancelar-responder">Fechar</button>
+            <button type="submit" class="btn btn-primary" id="btn-salvar-resposta">Salvar resposta</button>
+          </div>
+        </form>
+
+        <div id="avaliacao-area" style="display:none; margin-top:18px; padding-top:18px; border-top:1px solid var(--border, #eee);">
+          <button type="button" class="btn btn-ai" id="btn-avaliar-resposta">✦ Avaliar resposta com IA</button>
+          <div id="avaliacao-resultado" style="display:none; margin-top:12px;">
+            <p style="margin:0 0 6px;"><strong>Nota da IA: <span id="avaliacao-nota"></span>/10</strong></p>
+            <p id="avaliacao-comentario" style="margin:0; color: var(--muted);"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script>
+if (exigirLogin()) {
+  const apiUrl = `${API_BASE_URL}/api/perguntas`;
+  const tableBody = document.querySelector("#crud-table tbody");
+  const emptyState = document.getElementById("empty-state");
+  const alertBox = document.getElementById("crud-alert");
+  const filtroSelect = document.getElementById("filtro-categoria-select");
+
+  let items = [];
+  let filtroCategoria = "";
+  let destacarIds = new Set();
+
+  const CATEGORIAS = {
+    comportamental: "Comportamental",
+    tecnica: "Técnica (geral)",
+    situacional: "Situacional",
+    lideranca: "Liderança e Gestão",
+    vendas: "Vendas",
+    marketing: "Marketing",
+    atendimento_cliente: "Atendimento ao Cliente",
+    recursos_humanos: "Recursos Humanos",
+    financas: "Finanças e Contabilidade",
+    ti_programacao: "TI / Programação",
+    dados_analytics: "Dados e Analytics",
+    design: "Design e UX",
+    engenharia: "Engenharia",
+    juridico: "Jurídico",
+    saude: "Saúde",
+    educacao: "Educação",
+  };
+  function nomeCategoria(valor) {
+    return CATEGORIAS[valor] || valor;
+  }
+
+  function showAlert(msg, type = "error") {
+    alertBox.textContent = msg;
+    alertBox.className = `alert alert-${type}`;
+    alertBox.style.display = "block";
+    clearTimeout(showAlert.timer);
+    showAlert.timer = setTimeout(() => { alertBox.style.display = "none"; }, 6000);
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+  }
+
+  function renderRow(item) {
+    const tr = document.createElement("tr");
+    if (destacarIds.has(item.id)) tr.classList.add("row-destaque");
+    const resposta = item.minha_resposta;
+    const statusResposta = resposta
+      ? `<span title="${escapeHtml(resposta.texto_resposta)}">Respondida</span>`
+      : `<span class="badge">Sem resposta</span>`;
+    const nota = resposta && resposta.nota_ia !== null && resposta.nota_ia !== undefined
+      ? `${resposta.nota_ia}/10`
+      : "—";
+    tr.innerHTML = `
+      <td>${item.id}</td>
+      <td>${escapeHtml(item.texto)}</td>
+      <td>${escapeHtml(nomeCategoria(item.categoria))}</td>
+      <td>${escapeHtml(item.dificuldade)}</td>
+      <td>${statusResposta}</td>
+      <td>${nota}</td>
+      <td class="actions-cell">
+        <button class="btn btn-secondary btn-sm" data-action="responder" data-id="${item.id}">${resposta ? "Ver resposta" : "Responder"}</button>
+        <button class="btn btn-danger btn-sm" data-action="delete" data-id="${item.id}">Excluir</button>
+      </td>`;
+    return tr;
+  }
+
+  function renderizarTabela() {
+    const visiveis = items.filter((item) => !filtroCategoria || item.categoria === filtroCategoria);
+    tableBody.innerHTML = "";
+    if (visiveis.length === 0) {
+      emptyState.style.display = "block";
+    } else {
+      emptyState.style.display = "none";
+      visiveis.forEach((item) => tableBody.appendChild(renderRow(item)));
+    }
+  }
+
+  async function carregarLista() {
+    try {
+      const res = await fetch(apiUrl, { headers: authHeaders() });
+      if (res.status === 401) { limparSessao(); window.location.replace("login.html"); return; }
+      items = await res.json();
+      renderizarTabela();
+    } catch (err) {
+      showAlert(`Não foi possível conectar à API em ${API_BASE_URL}.`);
+    }
+  }
+
+  filtroSelect.addEventListener("change", () => {
+    filtroCategoria = filtroSelect.value;
+    renderizarTabela();
+  });
+
+  async function excluir(id) {
+    if (!confirm("Tem certeza que deseja excluir esta pergunta?")) return;
+    try {
+      const res = await fetch(`${apiUrl}/${id}`, { method: "DELETE", headers: authHeaders() });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.erro || "Não foi possível excluir.");
+      showAlert("Pergunta excluída com sucesso.", "success");
+      carregarLista();
+    } catch (err) {
+      showAlert(err.message);
+    }
+  }
+
+  // ---------- Geração de perguntas por IA ----------
+  const btnGerar = document.getElementById("btn-gerar-perguntas");
+  const gerarBackdrop = document.getElementById("gerar-modal-backdrop");
+  const gerarForm = document.getElementById("gerar-form");
+  const btnCancelarGeracao = document.getElementById("btn-cancelar-geracao");
+  const btnConfirmarGeracao = document.getElementById("btn-confirmar-geracao");
+
+  btnGerar.addEventListener("click", () => gerarBackdrop.classList.add("open"));
+  btnCancelarGeracao.addEventListener("click", () => gerarBackdrop.classList.remove("open"));
+  gerarBackdrop.addEventListener("click", (e) => {
+    if (e.target === gerarBackdrop) gerarBackdrop.classList.remove("open");
+  });
+
+  gerarForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const dados = Object.fromEntries(new FormData(gerarForm).entries());
+    btnConfirmarGeracao.disabled = true;
+    btnConfirmarGeracao.textContent = "Gerando...";
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/perguntas/gerar`, {
+        method: "POST",
+        headers: authHeaders({"Content-Type": "application/json"}),
+        body: JSON.stringify({...dados, quantidade: Number(dados.quantidade)})
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.erro || "Não foi possível gerar as perguntas.");
+
+      const geradas = payload.perguntas || [];
+      gerarBackdrop.classList.remove("open");
+
+      // Não recarrega a página inteira: a tabela sempre mostra TODAS as
+      // perguntas já cadastradas (é um banco de perguntas, não um histórico
+      // desta geração). Atualizamos a lista e destacamos só as que
+      // acabaram de ser criadas por essa chamada.
+      await carregarLista();
+      filtroSelect.value = dados.categoria;
+      filtroCategoria = dados.categoria;
+      destacarIds = new Set(geradas.map((p) => p.id));
+      renderizarTabela();
+      setTimeout(() => { destacarIds = new Set(); renderizarTabela(); }, 6000);
+
+      showAlert(`${geradas.length} pergunta(s) de categoria "${nomeCategoria(dados.categoria)}" geradas com sucesso (destacadas abaixo).`, "success");
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      btnConfirmarGeracao.disabled = false;
+      btnConfirmarGeracao.textContent = "Gerar agora";
+    }
+  });
+
+  // ---------- Responder pergunta + avaliar com IA ----------
+  const responderBackdrop = document.getElementById("responder-modal-backdrop");
+  const responderPerguntaTexto = document.getElementById("responder-pergunta-texto");
+  const responderForm = document.getElementById("responder-form");
+  const btnCancelarResponder = document.getElementById("btn-cancelar-responder");
+  const btnSalvarResposta = document.getElementById("btn-salvar-resposta");
+  const avaliacaoArea = document.getElementById("avaliacao-area");
+  const btnAvaliarResposta = document.getElementById("btn-avaliar-resposta");
+  const avaliacaoResultado = document.getElementById("avaliacao-resultado");
+  const avaliacaoNota = document.getElementById("avaliacao-nota");
+  const avaliacaoComentario = document.getElementById("avaliacao-comentario");
+
+  let perguntaAtualId = null;
+  let respostaAtualId = null;
+
+  function mostrarAvaliacao(resposta) {
+    if (!resposta || !resposta.id) {
+      avaliacaoArea.style.display = "none";
+      return;
+    }
+    avaliacaoArea.style.display = "block";
+    if (resposta.nota_ia !== null && resposta.nota_ia !== undefined) {
+      avaliacaoResultado.style.display = "block";
+      avaliacaoNota.textContent = resposta.nota_ia;
+      avaliacaoComentario.textContent = resposta.comentario_ia || "";
+      btnAvaliarResposta.textContent = "✦ Avaliar novamente com IA";
+    } else {
+      avaliacaoResultado.style.display = "none";
+      btnAvaliarResposta.textContent = "✦ Avaliar resposta com IA";
+    }
+  }
+
+  function abrirResponder(item) {
+    perguntaAtualId = item.id;
+    respostaAtualId = item.minha_resposta ? item.minha_resposta.id : null;
+    responderPerguntaTexto.textContent = item.texto;
+    responderForm.reset();
+    responderForm.texto_resposta.value = item.minha_resposta ? item.minha_resposta.texto_resposta : "";
+    mostrarAvaliacao(item.minha_resposta);
+    responderBackdrop.classList.add("open");
+  }
+
+  function fecharResponder() {
+    responderBackdrop.classList.remove("open");
+    perguntaAtualId = null;
+    respostaAtualId = null;
+  }
+
+  btnCancelarResponder.addEventListener("click", fecharResponder);
+  responderBackdrop.addEventListener("click", (e) => {
+    if (e.target === responderBackdrop) fecharResponder();
+  });
+
+  responderForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const texto_resposta = responderForm.texto_resposta.value.trim();
+    btnSalvarResposta.disabled = true;
+    btnSalvarResposta.textContent = "Salvando...";
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/perguntas/${perguntaAtualId}/responder`, {
+        method: "POST",
+        headers: authHeaders({"Content-Type": "application/json"}),
+        body: JSON.stringify({ texto_resposta }),
+      });
+      if (res.status === 401) { limparSessao(); window.location.replace("login.html"); return; }
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.erro || "Não foi possível salvar a resposta.");
+
+      respostaAtualId = payload.id;
+      mostrarAvaliacao(payload);
+
+      const item = items.find((i) => i.id === perguntaAtualId);
+      if (item) item.minha_resposta = payload;
+      renderizarTabela();
+
+      showAlert("Resposta salva com sucesso.", "success");
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      btnSalvarResposta.disabled = false;
+      btnSalvarResposta.textContent = "Salvar resposta";
+    }
+  });
+
+  btnAvaliarResposta.addEventListener("click", async () => {
+    if (!respostaAtualId) {
+      alert("Salve a resposta antes de pedir a avaliação da IA.");
+      return;
+    }
+    btnAvaliarResposta.disabled = true;
+    const textoOriginal = btnAvaliarResposta.textContent;
+    btnAvaliarResposta.textContent = "Avaliando...";
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/respostas/${respostaAtualId}/avaliar`, {
+        method: "POST",
+        headers: authHeaders(),
+      });
+      if (res.status === 401) { limparSessao(); window.location.replace("login.html"); return; }
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.erro || "Não foi possível avaliar a resposta.");
+
+      mostrarAvaliacao(payload);
+      const item = items.find((i) => i.id === perguntaAtualId);
+      if (item) item.minha_resposta = payload;
+      renderizarTabela();
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      btnAvaliarResposta.disabled = false;
+      btnAvaliarResposta.textContent = textoOriginal;
+    }
+  });
+
+  tableBody.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const id = Number(btn.dataset.id);
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+    if (btn.dataset.action === "responder") abrirResponder(item);
+    if (btn.dataset.action === "delete") excluir(id);
+  });
+
+  carregarLista();
+}
+</script>
+</body>
+</html>

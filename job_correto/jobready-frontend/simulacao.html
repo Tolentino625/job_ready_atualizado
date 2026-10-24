@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobReady — Simulação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .sim-card { background: var(--card); border-radius: 12px; padding: 28px; box-shadow: 0 1px 3px rgba(18,33,58,.08); margin-bottom: 20px; }
+  .sim-card h2 { margin: 0 0 6px; font-size: 20px; color: var(--navy); }
+  .sim-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 18px; }
+
+  .sim-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-size: 13px; color: var(--muted); }
+  .sim-progress { height: 6px; background: #EFEAE0; border-radius: 6px; overflow: hidden; margin-bottom: 22px; }
+  .sim-progress > div { height: 100%; background: var(--navy); transition: width .3s ease; }
+  .sim-question { font-family: 'Fraunces', Georgia, serif; font-size: 22px; line-height: 1.35; color: var(--navy); margin: 0 0 20px; }
+  .sim-textarea { width: 100%; min-height: 170px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font: 15px/1.5 Inter, sans-serif; background: #FDFCFA; resize: vertical; }
+  .sim-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; gap: 12px; flex-wrap: wrap; }
+
+  .timer { display: flex; align-items: center; gap: 10px; font-variant-numeric: tabular-nums; }
+  .timer-value { font-size: 28px; font-weight: 600; color: var(--navy); min-width: 72px; }
+  .timer-bar { flex: 1; min-width: 120px; height: 8px; background: #EFEAE0; border-radius: 8px; overflow: hidden; }
+  .timer-bar > div { height: 100%; width: 100%; background: var(--sage); transition: width 1s linear, background .3s; }
+  .timer.warn .timer-bar > div { background: var(--gold); }
+  .timer.danger .timer-bar > div { background: var(--danger); }
+  .timer.danger .timer-value { color: var(--danger); }
+  .sim-timer-row { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+  .sim-timer-row .timer { flex: 1; }
+
+  .score-hero { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .score-circle { width: 96px; height: 96px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--navy); color: #fff; flex-shrink: 0; }
+  .score-circle strong { font: 600 30px 'Fraunces', serif; line-height: 1; }
+  .score-circle small { font-size: 11px; opacity: .75; margin-top: 3px; }
+  .score-text { flex: 1; min-width: 220px; }
+  .score-text p { margin: 0 0 8px; line-height: 1.55; font-size: 14px; }
+  .score-text .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+
+  .resp-card { border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-top: 14px; background: #FDFCFA; }
+  .resp-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .resp-id { font-weight: 700; color: var(--navy); font-size: 14px; }
+  .resp-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .badge-nota { background: var(--navy); color: #fff; }
+  .badge-warn { background: #FBEAE4; color: var(--danger); }
+  .badge-ok { background: #EAF1EC; color: var(--sage); }
+  .resp-pergunta { font-weight: 600; margin: 0 0 8px; font-size: 14px; }
+  .resp-texto { margin: 0 0 10px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; color: #333; }
+  .resp-texto.vazia { color: var(--muted); font-style: italic; }
+  .resp-comentario { margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted); border-left: 3px solid var(--gold); padding-left: 10px; }
+
+  .hist-nota { font-weight: 600; }
+  .hidden { display: none !important; }
+  .loading-box { text-align: center; padding: 50px 20px; color: var(--muted); }
+  .spinner { width: 34px; height: 34px; border: 3px solid #EFEAE0; border-top-color: var(--gold); border-radius: 50%; margin: 0 auto 16px; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar" data-active="entrevistas"></aside>
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Simulação</h1>
+        <p>Responda a uma sequência de perguntas, com ou sem cronômetro, e receba um feedback de cada resposta.</p>
+      </div>
+      <a class="btn btn-secondary" href="entrevistas.html" style="text-decoration:none;">← Entrevistas</a>
+    </div>
+
+    <div class="alert" id="alerta" style="display:none;"></div>
+
+    <!-- 1. Configuração -->
+    <section id="view-setup">
+      <div class="sim-card">
+        <h2>Nova simulação</h2>
+        <p class="modal-description">O Gemini monta a sequência de perguntas. Com cronômetro, cada pergunta tem seu próprio tempo e, quando ele acaba, a resposta é enviada automaticamente. Sem limite de tempo, você responde com calma.</p>
+        <form id="setup-form">
+          <div class="sim-grid">
+            <div class="field">
+              <label>Categoria</label>
+              <select name="categoria" id="setup-categoria"></select>
+            </div>
+            <div class="field">
+              <label>Dificuldade</label>
+              <select name="dificuldade">
+                <option value="facil">Fácil</option>
+                <option value="media" selected>Média</option>
+                <option value="dificil">Difícil</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Quantidade de perguntas</label>
+              <select name="quantidade">
+                <option value="3">3 perguntas</option>
+                <option value="5" selected>5 perguntas</option>
+                <option value="7">7 perguntas</option>
+                <option value="10">10 perguntas</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Tempo por pergunta</label>
+              <select name="tempo_por_pergunta">
+                <option value="0">Sem limite de tempo</option>
+                <option value="60">1 minuto</option>
+                <option value="90">1 min 30 s</option>
+                <option value="120" selected>2 minutos</option>
+                <option value="180">3 minutos</option>
+                <option value="300">5 minutos</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-ai" id="btn-iniciar">▶ Iniciar simulação</button>
+        </form>
+      </div>
+
+      <div class="sim-card">
+        <h2>Histórico</h2>
+        <table id="hist-table" class="hidden">
+          <thead><tr><th>#</th><th>Data</th><th>Perguntas</th><th>Status</th><th>Nota</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="empty-state" id="hist-vazio" style="padding:24px 10px;">Você ainda não fez nenhuma simulação.</div>
+      </div>
+    </section>
+
+    <!-- 2. Em andamento -->
+    <section id="view-run" class="hidden">
+      <div class="sim-card">
+        <div class="sim-top">
+          <span id="run-contador"></span>
+          <span id="run-info"></span>
+        </div>
+        <div class="sim-progress"><div id="run-progress" style="width:0%"></div></div>
+        <div class="sim-timer-row" id="timer-row">
+          <div class="timer" id="timer">
+            <span class="timer-value" id="timer-value">0:00</span>
+            <div class="timer-bar"><div id="timer-bar"></div></div>
+          </div>
+        </div>
+        <p class="sim-question" id="run-pergunta"></p>
+        <textarea class="sim-textarea" id="run-texto" placeholder="Digite sua resposta aqui…" maxlength="5000"></textarea>
+        <div class="sim-actions">
+          <button type="button" class="btn btn-secondary" id="btn-pular">Pular pergunta</button>
+          <div>
+            <button type="button" class="btn btn-danger" id="btn-encerrar">Encerrar agora</button>
+            <button type="button" class="btn btn-primary" id="btn-enviar">Enviar resposta →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Avaliando -->
+    <section id="view-loading" class="hidden">
+      <div class="sim-card loading-box">
+        <div class="spinner"></div>
+        <strong>Avaliando suas respostas…</strong>
+        <p style="margin:8px 0 0;font-size:13px;">O Gemini está analisando cada resposta. Isso leva alguns segundos.</p>
+      </div>
+    </section>
+
+    <!-- 4. Resultado -->
+    <section id="view-result" class="hidden">
+      <div class="sim-card">
+        <div class="score-hero">
+          <div class="score-circle"><strong id="res-nota">0</strong><small>de 10</small></div>
+          <div class="score-text">
+            <p class="label">Feedback geral — Simulação #<span id="res-id"></span></p>
+            <p id="res-resumo"></p>
+            <p><span class="label">Pontos fortes:</span> <span id="res-fortes"></span></p>
+            <p><span class="label">A melhorar:</span> <span id="res-melhorar"></span></p>
+          </div>
+        </div>
+      </div>
+      <div class="sim-card">
+        <h2>Respostas e feedback</h2>
+        <p class="modal-description" style="margin-bottom:0;">Cada resposta tem um ID próprio, que também aparece na área Respostas.</p>
+        <div id="res-lista"></div>
+      </div>
+      <button type="button" class="btn btn-ai" id="btn-refazer">↻ Tentar novamente</button>
+      <button type="button" class="btn btn-primary" id="btn-nova">Nova simulação</button>
+    </section>
+  </main>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script>
+if (exigirLogin()) {
+  const API = `${API_BASE_URL}/api/simulacoes`;
+  const CATEGORIAS = {
+    comportamental: "Comportamental", tecnica: "Técnica (geral)", situacional: "Situacional",
+    lideranca: "Liderança e Gestão", vendas: "Vendas", marketing: "Marketing",
+    atendimento_cliente: "Atendimento ao Cliente", recursos_humanos: "Recursos Humanos",
+    financas: "Finanças e Contabilidade", ti_programacao: "TI / Programação",
+    dados_analytics: "Dados e Analytics", design: "Design e UX", engenharia: "Engenharia",
+    juridico: "Jurídico", saude: "Saúde", educacao: "Educação",
+  };
+  const $ = (id) => document.getElementById(id);
+  const views = ["setup", "run", "loading", "result"];
+
+  let sim = null;          // estado atual da simulação (resposta da API)
+  let tick = null;         // intervalo do cronômetro
+  let fimEm = 0;           // timestamp local (ms) em que a pergunta atual acaba
+  let enviando = false;
+
+  function esc(v) {
+    return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+  }
+  function mostrar(nome) {
+    views.forEach((v) => $(`view-${v}`).classList.toggle("hidden", v !== nome));
+  }
+  function alerta(msg, tipo = "error") {
+    const box = $("alerta");
+    box.textContent = msg; box.className = `alert alert-${tipo}`; box.style.display = "block";
+    clearTimeout(alerta.t); alerta.t = setTimeout(() => { box.style.display = "none"; }, 7000);
+  }
+  function fmtTempo(seg) {
+    seg = Math.max(0, Math.round(seg));
+    return `${Math.floor(seg / 60)}:${String(seg % 60).padStart(2, "0")}`;
+  }
+  function fmtNota(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
+
+  async function api(url, opts = {}) {
+    const res = await fetch(url, {
+      ...opts,
+      headers: authHeaders(opts.body ? { "Content-Type": "application/json" } : {}),
+    });
+    if (res.status === 401) { limparSessao(); window.location.replace("login.html"); throw new Error("Sessão expirada."); }
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(payload.erro || "Não foi possível concluir a operação.");
+    return payload;
+  }
+
+  // ---------- Setup + histórico ----------
+  $("setup-categoria").innerHTML = Object.entries(CATEGORIAS)
+    .map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
+
+  async function carregarHistorico() {
+    try {
+      const lista = await api(API);
+      const tbody = document.querySelector("#hist-table tbody");
+      tbody.innerHTML = lista.map((s) => `
+        <tr>
+          <td>${s.id}</td>
+          <td>${new Date(s.data_realizacao + "Z").toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</td>
+          <td>${s.respondidas}/${s.total}</td>
+          <td><span class="badge">${s.status === "concluida" ? "Concluída" : s.status === "em_andamento" ? "Em andamento" : esc(s.status)}</span></td>
+          <td class="hist-nota">${s.pontuacao_geral != null ? fmtNota(s.pontuacao_geral) + "/10" : "—"}</td>
+          <td class="actions-cell">
+            <button class="btn btn-secondary btn-sm" data-abrir="${s.id}">${s.status === "em_andamento" ? "Continuar" : "Rever"}</button>
+            ${s.status === "concluida" ? `<button class="btn btn-ai btn-sm" data-refazer="${s.id}">Tentar novamente</button>` : ""}
+          </td>
+        </tr>`).join("");
+      $("hist-table").classList.toggle("hidden", lista.length === 0);
+      $("hist-vazio").classList.toggle("hidden", lista.length > 0);
+    } catch (e) { alerta(e.message); }
+  }
+  document.querySelector("#hist-table tbody").addEventListener("click", (e) => {
+    if (e.target.dataset.abrir) abrir(Number(e.target.dataset.abrir));
+    if (e.target.dataset.refazer) refazer(Number(e.target.dataset.refazer), e.target);
+  });
+
+  $("setup-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const dados = Object.fromEntries(new FormData(e.target).entries());
+    dados.quantidade = Number(dados.quantidade);
+    dados.tempo_por_pergunta = Number(dados.tempo_por_pergunta);
+    const btn = $("btn-iniciar");
+    btn.disabled = true; btn.textContent = "Gerando perguntas…";
+    try {
+      sim = await api(API, { method: "POST", body: JSON.stringify(dados) });
+      history.replaceState(null, "", `?id=${sim.id}`);
+      renderPergunta();
+    } catch (err) {
+      alerta(err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = "▶ Iniciar simulação";
+    }
+  });
+
+  // ---------- Execução ----------
+  function pararTimer() { clearInterval(tick); tick = null; }
+
+  function renderPergunta() {
+    const item = sim.item_atual;
+    if (!item) { finalizar(); return; }
+    mostrar("run");
+    enviando = false;
+    $("run-contador").textContent = `Pergunta ${item.ordem} de ${sim.total}`;
+    $("run-info").textContent = `${CATEGORIAS[item.categoria] || item.categoria} · ` +
+      (item.cronometrada ? `tempo: ${fmtTempo(item.tempo_limite_seg)}` : "sem limite de tempo");
+    $("run-progress").style.width = `${(sim.respondidas / sim.total) * 100}%`;
+    $("run-pergunta").textContent = item.pergunta;
+    $("run-texto").value = "";
+    $("run-texto").disabled = false;
+    ["btn-enviar", "btn-pular", "btn-encerrar"].forEach((id) => { $(id).disabled = false; });
+    $("run-texto").focus();
+
+    pararTimer();
+    $("timer-row").classList.toggle("hidden", !item.cronometrada);
+    if (!item.cronometrada) return;   // sem limite: não há cronômetro
+    fimEm = Date.now() + item.restante_seg * 1000;
+    atualizarTimer(item.tempo_limite_seg);
+    tick = setInterval(() => atualizarTimer(item.tempo_limite_seg), 250);
+  }
+
+  function atualizarTimer(limite) {
+    const restante = Math.max(0, (fimEm - Date.now()) / 1000);
+    const pct = Math.min(100, (restante / limite) * 100);
+    $("timer-value").textContent = fmtTempo(Math.ceil(restante));
+    $("timer-bar").style.width = `${pct}%`;
+    $("timer").className = "timer" + (pct <= 15 ? " danger" : pct <= 40 ? " warn" : "");
+    if (restante <= 0) {
+      pararTimer();
+      enviar(true);
+    }
+  }
+
+  async function enviar(porTempo = false, vazia = false, encerrando = false) {
+    if (enviando) return;
+    enviando = true;
+    pararTimer();
+    const item = sim.item_atual;
+    const texto = vazia ? "" : $("run-texto").value;
+    ["btn-enviar", "btn-pular", "btn-encerrar"].forEach((id) => { $(id).disabled = true; });
+    $("run-texto").disabled = true;
+    try {
+      sim = await api(`${API}/${sim.id}/responder`, {
+        method: "POST",
+        body: JSON.stringify({ item_id: item.item_id, texto_resposta: texto }),
+      });
+      if (encerrando) return true;
+      if (porTempo) alerta("O tempo acabou: sua resposta foi enviada automaticamente.", "success");
+      renderPergunta();
+    } catch (err) {
+      alerta(err.message);
+      enviando = false;
+      // Reativa a tela para tentar de novo (o tempo já corre no servidor).
+      ["btn-enviar", "btn-pular", "btn-encerrar"].forEach((id) => { $(id).disabled = false; });
+      $("run-texto").disabled = false;
+      if (item.cronometrada) {
+        fimEm = Math.max(fimEm, Date.now() + 5000);
+        tick = setInterval(() => atualizarTimer(item.tempo_limite_seg), 250);
+      }
+    }
+  }
+
+  $("btn-enviar").addEventListener("click", () => enviar(false));
+  $("btn-pular").addEventListener("click", () => enviar(false, true));
+  $("btn-encerrar").addEventListener("click", async () => {
+    if (!confirm("Encerrar agora? As perguntas restantes contarão como sem resposta (nota 0).")) return;
+    pararTimer();
+    // Envia o que já foi digitado na pergunta atual antes de finalizar.
+    if (!enviando && sim.item_atual && $("run-texto").value.trim()) {
+      const ok = await enviar(false, false, true);
+      if (!ok) return;   // falhou ao enviar: continua na pergunta
+    }
+    finalizar();
+  });
+
+  async function finalizar() {
+    pararTimer();
+    mostrar("loading");
+    try {
+      sim = await api(`${API}/${sim.id}/finalizar`, { method: "POST" });
+      renderResultado();
+    } catch (err) {
+      alerta(err.message);
+      // A simulação continua salva: dá para tentar de novo pelo histórico.
+      sim = null; history.replaceState(null, "", location.pathname);
+      mostrar("setup"); carregarHistorico();
+    }
+  }
+
+  // ---------- Resultado ----------
+  function renderResultado() {
+    mostrar("result");
+    history.replaceState(null, "", `?id=${sim.id}`);
+    $("res-id").textContent = sim.id;
+    $("res-nota").textContent = fmtNota(sim.pontuacao_geral ?? 0);
+    const fb = sim.feedback || {};
+    $("res-resumo").textContent = fb.comentario || "";
+    $("res-fortes").textContent = fb.ponto_forte || "—";
+    $("res-melhorar").textContent = fb.ponto_a_melhorar || "—";
+
+    $("res-lista").innerHTML = sim.itens.map((i) => {
+      const vazia = !i.texto_resposta || i.texto_resposta === "(sem resposta)";
+      const tempo = i.tempo_gasto_seg == null ? "—"
+        : i.cronometrada ? `${fmtTempo(i.tempo_gasto_seg)} / ${fmtTempo(i.tempo_limite_seg)}`
+        : fmtTempo(i.tempo_gasto_seg);
+      return `
+        <div class="resp-card">
+          <div class="resp-head">
+            <span class="resp-id">Resposta #${i.resposta_id ?? "—"} <span style="font-weight:400;color:var(--muted);">· pergunta ${i.ordem}</span></span>
+            <span class="resp-meta">
+              <span class="badge ${i.tempo_esgotado ? "badge-warn" : "badge-ok"}">⏱ ${tempo}${i.tempo_esgotado ? " · tempo esgotado" : ""}</span>
+              <span class="badge badge-nota">${i.nota != null ? fmtNota(i.nota) + "/10" : "—"}</span>
+            </span>
+          </div>
+          <p class="resp-pergunta">${esc(i.pergunta)}</p>
+          <p class="resp-texto ${vazia ? "vazia" : ""}">${vazia ? "Sem resposta." : esc(i.texto_resposta)}</p>
+          ${i.comentario ? `<p class="resp-comentario">${esc(i.comentario)}</p>` : ""}
+        </div>`;
+    }).join("");
+  }
+
+  // Nova tentativa: mesmas perguntas e mesmo tempo, sem gerar perguntas de novo.
+  async function refazer(id, botao) {
+    if (botao) { botao.disabled = true; }
+    try {
+      sim = await api(`${API}/${id}/refazer`, { method: "POST" });
+      history.replaceState(null, "", `?id=${sim.id}`);
+      window.scrollTo(0, 0);
+      renderPergunta();
+    } catch (err) {
+      alerta(err.message);
+      if (botao) botao.disabled = false;
+    }
+  }
+  $("btn-refazer").addEventListener("click", (e) => refazer(sim.id, e.target));
+
+  $("btn-nova").addEventListener("click", () => {
+    sim = null; history.replaceState(null, "", location.pathname);
+    mostrar("setup"); carregarHistorico(); window.scrollTo(0, 0);
+  });
+
+  // ---------- Abrir/retomar ----------
+  async function abrir(id) {
+    try {
+      sim = await api(`${API}/${id}`);
+      if (sim.status === "concluida") renderResultado();
+      else if (sim.status === "em_andamento") {
+        history.replaceState(null, "", `?id=${sim.id}`);
+        renderPergunta();
+      } else { alerta("Esta simulação foi cancelada."); sim = null; }
+    } catch (err) { alerta(err.message); mostrar("setup"); }
+  }
+
+  const idUrl = Number(new URLSearchParams(location.search).get("id"));
+  if (idUrl) abrir(idUrl); else { mostrar("setup"); }
+  carregarHistorico();
+
+  // Evita perder a simulação por engano ao fechar/recarregar durante a execução.
+  window.addEventListener("beforeunload", (e) => {
+    if (tick) { e.preventDefault(); e.returnValue = ""; }
+  });
+}
+</script>
+</body>
+</html>
