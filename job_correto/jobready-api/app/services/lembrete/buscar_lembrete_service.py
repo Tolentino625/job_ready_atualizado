@@ -2,7 +2,6 @@ from app.models.lembrete import Lembrete
 
 
 class BuscarLembreteService:
-    """Caso de uso: buscar um lembrete pelo id, garantindo que pertence ao usuário."""
 
     def __init__(self, lembrete_id, usuario_id=None):
         self.lembrete_id = lembrete_id

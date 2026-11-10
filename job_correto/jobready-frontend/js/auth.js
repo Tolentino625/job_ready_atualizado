@@ -45,7 +45,6 @@ async function logout() {
       headers: authHeaders(),
     });
   } catch (_) {
-    // Mesmo se a API estiver desligada, a sessão local será encerrada.
   } finally {
     limparSessao();
     window.location.replace("login.html");

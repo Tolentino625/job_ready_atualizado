@@ -13,12 +13,6 @@ TEMPO_MIN, TEMPO_MAX = 30, 600
 
 
 class IniciarSimulacaoService:
-    """Caso de uso: iniciar uma simulação (cronometrada ou sem limite de tempo).
-
-    Gera a sequência de perguntas com o Gemini (reaproveitando o gerador de
-    perguntas existente), cria a Entrevista do tipo simulação e um item por
-    pergunta, e dispara o cronômetro da primeira.
-    """
 
     def __init__(self, dados, usuario_id):
         self.dados = dados or {}
@@ -35,7 +29,6 @@ class IniciarSimulacaoService:
 
         if not QUANTIDADE_MIN <= quantidade <= QUANTIDADE_MAX:
             raise ValueError(f"A quantidade de perguntas deve ficar entre {QUANTIDADE_MIN} e {QUANTIDADE_MAX}.")
-        # tempo 0 = simulação sem cronômetro
         if tempo != 0 and not TEMPO_MIN <= tempo <= TEMPO_MAX:
             raise ValueError(
                 f"O tempo por pergunta deve ser 0 (sem limite) ou ficar entre {TEMPO_MIN} e {TEMPO_MAX} segundos."
@@ -49,11 +42,10 @@ class IniciarSimulacaoService:
     def execute(self):
         quantidade, tempo, categoria, dificuldade = self._validar()
 
-        # Gera primeiro: se o Gemini falhar, nenhuma entrevista fica pendurada.
         perguntas = GerarPerguntasService(
             {"quantidade": quantidade, "categoria": categoria, "dificuldade": dificuldade},
             self.usuario_id,
-            origem=ORIGEM_SIMULACAO,   # fica só na simulação, fora da tela Perguntas
+            origem=ORIGEM_SIMULACAO,
         ).execute()
 
         agora = datetime.utcnow()

@@ -2,7 +2,6 @@ from app.models.usuario import Usuario
 
 
 class CriarUsuarioService:
-    """Caso de uso: cadastrar um novo usuário."""
 
     def __init__(self, dados):
         self.dados = dados or {}

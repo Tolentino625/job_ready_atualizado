@@ -5,24 +5,17 @@ ORIGEM_SIMULACAO = "simulacao"
 
 
 class Pergunta(db.Model):
-    """Model da entidade Pergunta (banco de perguntas frequentes de entrevista)."""
 
     __tablename__ = "perguntas"
 
     id = db.Column(db.Integer, primary_key=True)
-    # Dono da pergunta (quem a gerou). Perguntas antigas, criadas antes desta
-    # coluna existir, ficam com NULL e não aparecem para nenhum usuário.
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=True)
     texto = db.Column(db.Text, nullable=False)
     categoria = db.Column(db.String(80), nullable=False, default="comportamental")
     dificuldade = db.Column(db.String(20), nullable=False, default="media")
     sugestao_resposta = db.Column(db.Text, nullable=True)
-    # De onde a pergunta veio: "banco" = gerada na tela Perguntas (aparece lá);
-    # "simulacao" = gerada para uma simulação de entrevista (fica só na
-    # simulação e NÃO aparece na tela Perguntas).
     origem = db.Column(db.String(20), nullable=False, default=ORIGEM_BANCO)
 
-    # ---------- CRUD ----------
     @classmethod
     def criar(cls, texto, categoria="comportamental", dificuldade="media",
               sugestao_resposta=None, usuario_id=None, origem=ORIGEM_BANCO):
@@ -44,8 +37,6 @@ class Pergunta(db.Model):
 
     @classmethod
     def listar_por_usuario(cls, usuario_id):
-        """Perguntas do banco de perguntas do usuário (as geradas para
-        simulações de entrevista não entram aqui)."""
         return (
             cls.query.filter_by(usuario_id=usuario_id, origem=ORIGEM_BANCO)
             .order_by(cls.id)

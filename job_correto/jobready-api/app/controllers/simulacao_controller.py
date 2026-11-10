@@ -13,7 +13,6 @@ simulacao_bp = Blueprint("simulacao_bp", __name__)
 
 
 def _erro_ia(e):
-    """Mesmo tratamento de erros do Gemini usado nas demais rotas de IA."""
     if isinstance(e, GeminiCotaExcedidaError):
         return jsonify({"erro": str(e)}), 429
     if isinstance(e, GeminiIndisponivelError):
@@ -35,7 +34,7 @@ def iniciar_simulacao():
         return jsonify(dados), 201
     except ValueError as e:
         return jsonify({"erro": str(e)}), 400
-    except Exception as e:  # inclui falhas do Gemini
+    except Exception as e:
         return _erro_ia(e)
 
 

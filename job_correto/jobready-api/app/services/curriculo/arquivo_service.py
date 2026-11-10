@@ -31,8 +31,6 @@ def salvar_arquivo(arquivo):
         permitidos = ", ".join(sorted(ALLOWED_EXTENSIONS))
         raise ValueError(f"Tipo de arquivo não permitido. Use: {permitidos}.")
 
-    # O limite do Flask também protege a requisição. Esta verificação cobre
-    # streams que informem o tamanho antes do salvamento.
     tamanho = getattr(arquivo, "content_length", None)
     if tamanho and tamanho > MAX_FILE_SIZE:
         raise ValueError("O arquivo deve ter no máximo 10 MB.")

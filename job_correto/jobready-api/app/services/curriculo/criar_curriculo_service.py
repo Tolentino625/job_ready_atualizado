@@ -3,7 +3,6 @@ from app.services.curriculo.arquivo_service import salvar_arquivo
 
 
 class CriarCurriculoService:
-    """Caso de uso: registrar currículo (do usuário autenticado) e, opcionalmente, seu anexo."""
 
     def __init__(self, dados, arquivo, usuario_id):
         self.dados = dados or {}

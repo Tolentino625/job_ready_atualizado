@@ -3,7 +3,6 @@ from app.services.simulacao.comum import TIPO_SIMULACAO
 
 
 class ListarSimulacoesService:
-    """Caso de uso: histórico de simulações cronometradas do usuário (mais recentes primeiro)."""
 
     def __init__(self, usuario_id):
         self.usuario_id = usuario_id

@@ -9,12 +9,6 @@ MAX_CARACTERES = 5000
 
 
 class ResponderSimulacaoService:
-    """Caso de uso: registrar a resposta da pergunta atual da simulação.
-
-    O tempo gasto é medido pelo servidor (a partir de `liberada_em`), então não
-    depende do que o navegador informa. Respostas vazias (pulada ou tempo
-    esgotado sem digitar nada) também geram uma Resposta com ID, nota 0.
-    """
 
     def __init__(self, entrevista_id, dados, usuario_id):
         self.entrevista_id = entrevista_id

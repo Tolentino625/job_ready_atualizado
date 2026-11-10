@@ -3,13 +3,12 @@ from app.extensions import db
 
 
 class Entrevista(db.Model):
-    """Model da entidade Entrevista (simulações de entrevista e histórico)."""
 
     __tablename__ = "entrevistas"
 
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
-    tipo = db.Column(db.String(20), nullable=False, default="texto")  # 'voz' ou 'texto'
+    tipo = db.Column(db.String(20), nullable=False, default="texto")
     status = db.Column(db.String(20), nullable=False, default="em_andamento")
     data_realizacao = db.Column(db.DateTime, default=datetime.utcnow)
     pontuacao_geral = db.Column(db.Float, nullable=True)
@@ -17,7 +16,6 @@ class Entrevista(db.Model):
     respostas = db.relationship("Resposta", backref="entrevista", cascade="all, delete-orphan")
     feedbacks = db.relationship("Feedback", backref="entrevista", cascade="all, delete-orphan")
 
-    # ---------- CRUD ----------
     @classmethod
     def criar(cls, usuario_id, tipo="texto", status="em_andamento", pontuacao_geral=None):
         entrevista = cls(

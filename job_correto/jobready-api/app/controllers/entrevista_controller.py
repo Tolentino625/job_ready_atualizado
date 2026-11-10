@@ -11,7 +11,6 @@ entrevista_bp = Blueprint("entrevista_bp", __name__)
 
 
 class EntrevistaListController(MethodView):
-    """Controller (classe) responsável pela coleção /api/entrevistas."""
 
     def get(self):
         entrevistas = ListarEntrevistasService(usuario_atual().id).execute()
@@ -26,7 +25,6 @@ class EntrevistaListController(MethodView):
 
 
 class EntrevistaDetailController(MethodView):
-    """Controller (classe) responsável pelo item /api/entrevistas/<id>."""
 
     def get(self, entrevista_id):
         try:

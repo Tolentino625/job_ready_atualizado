@@ -50,9 +50,6 @@ const TIPOS_ROTULO = {
 const ehSimulacao = (e) => e.tipo === "simulacao_cronometrada";
 
 initCrudPage({
-  // Para simulações: "Rever" (abre o resultado) e "Tentar novamente" (mesmas
-  // perguntas e mesmo tempo, em uma nova tentativa). Se ainda está em
-  // andamento, em vez disso aparece "Continuar".
   extraActions: (e) => {
     if (!ehSimulacao(e)) return "";
     if (e.status === "em_andamento") {

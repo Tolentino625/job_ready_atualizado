@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobReady — Desempenho</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .stat-card small { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+  .stat-card strong { font-family: 'Fraunces', Georgia, serif; font-size: 28px; color: var(--navy); }
+  h2.section-title { font-size: 20px; color: var(--navy); margin: 0 0 6px; }
+  .section-hint { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .badge-ok { background: #EAF1EC; color: var(--sage); }
+  .badge-warn { background: #F6EBD5; color: var(--gold); }
+  .badge-bad { background: #FBEAE4; color: var(--danger); }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar" data-active="desempenho"></aside>
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Desempenho</h1>
+        <p>Estatísticas das suas respostas avaliadas e categorias com notas baixas em sequência.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-error" id="alerta" style="display:none;"></div>
+
+    <div class="stats-grid" id="stats"></div>
+    <div class="empty-state" id="sem-dados" style="display:none;">
+      Você ainda não tem respostas avaliadas. Responda perguntas e peça a avaliação para ver seu desempenho aqui.
+    </div>
+
+    <h2 class="section-title">Gargalos detectados</h2>
+    <p class="section-hint" id="criterio"></p>
+    <table id="tabela-gargalos" style="display:none;">
+      <thead>
+        <tr><th>Categoria</th><th>Maior sequência de notas baixas</th><th>Média na sequência</th><th>Situação</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="empty-state" id="sem-gargalos" style="display:none;">Nenhum gargalo detectado. Continue assim!</div>
+  </main>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script>
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
+
+const STATUS = {
+  sem_dados: ["Sem dados", ""],
+  dados_insuficientes: ["Dados insuficientes", ""],
+  consistente: ["Consistente", "badge-ok"],
+  moderado: ["Moderado", "badge-warn"],
+  inconsistente: ["Inconsistente", "badge-bad"],
+};
+
+const fmt = (n) => (n === null || n === undefined ? "—" : Number(n).toFixed(1).replace(".", ","));
+
+async function carregar() {
+  const alerta = document.getElementById("alerta");
+  try {
+    const resp = await fetch(`${API_BASE_URL}/api/desempenho`, { headers: authHeaders() });
+    if (resp.status === 401) { limparSessao(); window.location.replace("login.html"); return; }
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.erro || "Falha ao carregar o desempenho.");
+    renderizar(data);
+  } catch (e) {
+    alerta.textContent = e.message;
+    alerta.style.display = "block";
+  }
+}
+
+function renderizar({ estatisticas: e, gargalos, criterios }) {
+  const [rotulo, classe] = STATUS[e.status_consistencia] || [e.status_consistencia, ""];
+  document.getElementById("stats").innerHTML = [
+    ["Respostas avaliadas", e.total_tentativas],
+    ["Média das notas", fmt(e.media_notas)],
+    ["Maior nota", fmt(e.maior_nota)],
+    ["Menor nota", fmt(e.menor_nota)],
+    ["Amplitude", fmt(e.amplitude)],
+  ].map(([l, v]) => `<div class="stat-card"><small>${l}</small><strong>${v}</strong></div>`).join("") +
+    `<div class="stat-card"><small>Consistência</small><span class="badge ${classe}">${escapeHtml(rotulo)}</span></div>`;
+
+  document.getElementById("sem-dados").style.display = e.total_tentativas ? "none" : "block";
+  document.getElementById("criterio").textContent =
+    `Categorias com ${criterios.tamanho_minimo_sequencia} ou mais notas seguidas abaixo de ${fmt(criterios.nota_minima_adequada)}.`;
+
+  const tabela = document.getElementById("tabela-gargalos");
+  const vazio = document.getElementById("sem-gargalos");
+  if (!gargalos.length) {
+    tabela.style.display = "none";
+    vazio.style.display = e.total_tentativas ? "block" : "none";
+    return;
+  }
+  vazio.style.display = "none";
+  tabela.style.display = "";
+  tabela.querySelector("tbody").innerHTML = gargalos.map((g) => `
+    <tr>
+      <td>${escapeHtml(g.categoria)}</td>
+      <td>${g.maior_sequencia_baixa}</td>
+      <td>${fmt(g.media_na_sequencia)}</td>
+      <td><span class="badge ${g.em_andamento ? "badge-bad" : "badge-warn"}">${g.em_andamento ? "Ainda ativo" : "Superado"}</span></td>
+    </tr>`).join("");
+}
+
+document.addEventListener("DOMContentLoaded", carregar);
+</script>
+</body>
+</html>

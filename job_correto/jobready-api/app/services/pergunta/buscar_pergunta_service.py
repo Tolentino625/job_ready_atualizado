@@ -2,7 +2,6 @@ from app.models.pergunta import Pergunta
 
 
 class BuscarPerguntaService:
-    """Caso de uso: buscar uma pergunta pelo id, garantindo que pertence ao usuário."""
 
     def __init__(self, pergunta_id, usuario_id=None):
         self.pergunta_id = pergunta_id

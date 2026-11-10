@@ -2,7 +2,6 @@ from app.services.resposta.buscar_resposta_service import BuscarRespostaService
 
 
 class AtualizarRespostaService:
-    """Caso de uso: atualizar os dados de uma resposta existente (do próprio usuário)."""
 
     def __init__(self, resposta_id, dados, usuario_id):
         self.resposta_id = resposta_id

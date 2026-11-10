@@ -4,7 +4,6 @@ from app.services.curriculo.arquivo_service import uploads_dir
 from app.services.curriculo.buscar_curriculo_service import BuscarCurriculoService
 from app.services.ia.gemini_client import extrair_json, gerar_conteudo
 
-# Tipos de arquivo que o Gemini consegue "ler" diretamente (multimodal).
 _MIME_MULTIMODAL_SUPORTADOS = {
     "application/pdf",
     "image/png",
@@ -36,8 +35,6 @@ texto adicional, exatamente neste formato:
 
 
 class AvaliarCurriculoService:
-    """Caso de uso: pedir ao Gemini uma avaliação do currículo e salvar a
-    nota (0 a 10) e o feedback (pontos fortes / pontos a melhorar) no próprio registro."""
 
     def __init__(self, curriculo_id, usuario_id):
         self.curriculo_id = curriculo_id
@@ -79,7 +76,6 @@ class AvaliarCurriculoService:
         return curriculo.definir_avaliacao_ia(nota, pontos_fortes, pontos_a_melhorar)
 
     def _montar_partes_conteudo(self, curriculo):
-        """Monta as partes (texto e/ou arquivo) que serão enviadas ao Gemini."""
         partes = []
 
         if curriculo.conteudo_texto and curriculo.conteudo_texto.strip():
@@ -93,7 +89,7 @@ class AvaliarCurriculoService:
             mimetype = curriculo.arquivo_mimetype or ""
 
             if caminho is None or not caminho.is_file():
-                pass  # arquivo referenciado no banco não existe mais em disco
+                pass
             elif mimetype == "text/plain":
                 try:
                     texto_arquivo = caminho.read_text(encoding="utf-8", errors="ignore")
@@ -109,8 +105,6 @@ class AvaliarCurriculoService:
                     types.Part.from_bytes(data=caminho.read_bytes(), mime_type=mimetype)
                 )
             elif not partes:
-                # Formatos como .doc/.docx/.rtf/.odt não podem ser lidos
-                # diretamente pelo Gemini nesta versão do serviço.
                 raise ValueError(
                     f"O arquivo anexado ({mimetype or 'formato desconhecido'}) não pode "
                     "ser analisado diretamente pela IA. Envie o currículo em PDF, imagem "

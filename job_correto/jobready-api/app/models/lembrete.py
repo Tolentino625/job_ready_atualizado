@@ -3,7 +3,6 @@ from app.extensions import db
 
 
 class Lembrete(db.Model):
-    """Lembrete de estudo e preparação (pertence a um usuário)."""
 
     __tablename__ = "lembretes"
 

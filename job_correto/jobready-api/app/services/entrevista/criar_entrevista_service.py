@@ -2,7 +2,6 @@ from app.models.entrevista import Entrevista
 
 
 class CriarEntrevistaService:
-    """Caso de uso: iniciar uma nova simulação de entrevista para o usuário autenticado."""
 
     def __init__(self, dados, usuario_id):
         self.dados = dados or {}

@@ -8,7 +8,6 @@ __all__ = ["create_app", "db"]
 
 
 def _migrar_schema():
-    """Adiciona colunas novas sem apagar dados existentes do SQLite."""
     inspector = inspect(db.engine)
     if "curriculos" in inspector.get_table_names():
         colunas = {c["name"] for c in inspector.get_columns("curriculos")}
@@ -33,7 +32,6 @@ def _migrar_schema():
                 conn.execute(text("ALTER TABLE perguntas ADD COLUMN usuario_id INTEGER"))
             if "origem" not in colunas:
                 conn.execute(text("ALTER TABLE perguntas ADD COLUMN origem VARCHAR(20) NOT NULL DEFAULT 'banco'"))
-                # Perguntas que já pertencem a alguma simulação saem da tela Perguntas.
                 conn.execute(text(
                     "UPDATE perguntas SET origem = 'simulacao' "
                     "WHERE id IN (SELECT pergunta_id FROM simulacao_itens)"
@@ -57,7 +55,7 @@ def create_app():
     db.init_app(app)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-    from app.models import usuario, curriculo, pergunta, entrevista, resposta, feedback, lembrete, simulacao_item  # noqa
+    from app.models import usuario, curriculo, pergunta, entrevista, resposta, feedback, lembrete, simulacao_item
 
     with app.app_context():
         db.create_all()
@@ -72,6 +70,7 @@ def create_app():
     from app.controllers.lembrete_controller import lembrete_bp
     from app.controllers.simulacao_controller import simulacao_bp
     from app.controllers.auth_controller import auth_bp
+    from app.controllers.desempenho_controller import desempenho_bp
 
     app.register_blueprint(usuario_bp)
     app.register_blueprint(curriculo_bp)
@@ -82,6 +81,7 @@ def create_app():
     app.register_blueprint(lembrete_bp)
     app.register_blueprint(simulacao_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(desempenho_bp)
 
     @app.before_request
     def proteger_api():
@@ -96,9 +96,6 @@ def create_app():
         usuario = usuario_autenticado()
         if not usuario:
             return jsonify({"erro": "Autenticação necessária."}), 401
-        # Disponibiliza o usuário autenticado para os controllers/services,
-        # que usam isso para garantir que cada usuário só acesse seus
-        # próprios dados.
         g.usuario_atual = usuario
         return None
 

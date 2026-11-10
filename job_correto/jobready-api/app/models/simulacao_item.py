@@ -6,13 +6,6 @@ from app.extensions import db
 
 
 class SimulacaoItem(db.Model):
-    """Uma pergunta dentro de uma simulação cronometrada.
-
-    A simulação em si é uma `Entrevista` (tipo="simulacao_cronometrada"); esta
-    tabela guarda, para cada pergunta da sequência, a ordem, o tempo limite e
-    o tempo realmente gasto, e aponta para a `Resposta` (que carrega o ID
-    público da resposta, a nota e o comentário da IA).
-    """
 
     __tablename__ = "simulacao_itens"
 
@@ -20,8 +13,8 @@ class SimulacaoItem(db.Model):
     entrevista_id = db.Column(db.Integer, db.ForeignKey("entrevistas.id"), nullable=False)
     pergunta_id = db.Column(db.Integer, db.ForeignKey("perguntas.id"), nullable=False)
     ordem = db.Column(db.Integer, nullable=False)
-    tempo_limite_seg = db.Column(db.Integer, nullable=False)  # 0 = sem limite de tempo (não cronometrada)
-    liberada_em = db.Column(db.DateTime, nullable=True)   # quando o cronômetro desta pergunta começou
+    tempo_limite_seg = db.Column(db.Integer, nullable=False)
+    liberada_em = db.Column(db.DateTime, nullable=True)
     respondida_em = db.Column(db.DateTime, nullable=True)
     tempo_gasto_seg = db.Column(db.Integer, nullable=True)
     tempo_esgotado = db.Column(db.Boolean, nullable=False, default=False)
@@ -43,8 +36,6 @@ class SimulacaoItem(db.Model):
         return bool(self.tempo_limite_seg)
 
     def restante_seg(self, agora=None):
-        """Segundos que ainda restam no cronômetro desta pergunta (0 se já estourou;
-        None se a simulação não é cronometrada)."""
         if not self.cronometrada:
             return None
         if self.respondida or not self.liberada_em:

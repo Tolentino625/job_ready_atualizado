@@ -7,13 +7,6 @@ from app.services.simulacao.comum import TIPO_SIMULACAO, buscar_simulacao, seria
 
 
 class RefazerSimulacaoService:
-    """Caso de uso: tentar novamente uma simulação já concluída.
-
-    Cria uma NOVA simulação com as mesmas perguntas, na mesma ordem e com o
-    mesmo tempo por pergunta (ou sem limite, se a original era sem cronômetro).
-    Não chama o Gemini para gerar perguntas, e a simulação original fica
-    intacta, então dá para comparar as notas das tentativas.
-    """
 
     def __init__(self, entrevista_id, usuario_id):
         self.entrevista_id = entrevista_id
@@ -24,7 +17,6 @@ class RefazerSimulacaoService:
         if original.status != "concluida":
             raise ValueError("Só é possível tentar novamente uma simulação já concluída.")
 
-        # Ignora perguntas que o usuário tenha excluído do banco desde então.
         base = [i for i in original.simulacao_itens if i.pergunta is not None]
         if not base:
             raise ValueError("As perguntas desta simulação não existem mais.")

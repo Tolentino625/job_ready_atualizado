@@ -3,7 +3,6 @@ from app.services.curriculo.buscar_curriculo_service import BuscarCurriculoServi
 
 
 class DeletarCurriculoService:
-    """Caso de uso: excluir currículo (do próprio usuário) e seu anexo."""
 
     def __init__(self, curriculo_id, usuario_id):
         self.curriculo_id = curriculo_id

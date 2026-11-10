@@ -8,14 +8,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <style>
-  /* ---------- Resumo ---------- */
   .cv-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 22px; }
   .cv-stat { background: var(--card); border-radius: 12px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(18,33,58,.08); }
   .cv-stat .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
   .cv-stat .valor { font: 600 26px 'Fraunces', Georgia, serif; color: var(--navy); margin-top: 4px; }
   .cv-stat .valor small { font: 500 13px Inter, sans-serif; color: var(--muted); }
 
-  /* ---------- Cartão de currículo ---------- */
   .cv-card { background: var(--card); border-radius: 12px; padding: 24px 26px; box-shadow: 0 1px 3px rgba(18,33,58,.08); margin-bottom: 18px; position: relative; }
   .cv-head { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
 
@@ -40,7 +38,6 @@
 
   .cv-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
 
-  /* ---------- Resultado da avaliação ---------- */
   .cv-body { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
   .cv-geral { margin: 0 0 16px; font-size: 14px; line-height: 1.6; }
   .cv-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -62,7 +59,6 @@
   .cv-vazio h2 { margin: 0 0 6px; font-size: 20px; color: var(--navy); }
   .cv-vazio p { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
 
-  /* ---------- Formulário (modal) ---------- */
   .file-picker { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .file-picker input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
   .file-picker .file-picker-label { display: inline-block; width: auto; margin: 0; padding: 9px 14px; border: 1px dashed var(--navy); border-radius: 8px; color: var(--navy); background: #FDFCFA; cursor: pointer; font-size: 13px; font-weight: 600; text-transform: none; letter-spacing: 0; }
@@ -175,8 +171,6 @@ if (exigirLogin()) {
     showAlert.timer = setTimeout(() => alertBox.style.display = "none", 5000);
   }
 
-  // O backend devolve datas em UTC sem fuso ("2026-10-22T23:00:00"): sem o "Z"
-  // o navegador as leria como horário local e mostraria 3 h a mais no Brasil.
   function formatDate(value) {
     if (!value) return "—";
     const date = new Date(/(Z|[+-]\d\d:?\d\d)$/.test(value) ? value : `${value}Z`);
@@ -194,8 +188,6 @@ if (exigirLogin()) {
     return `<span class="badge badge-nivel ${nivel(nota)}" style="font-size:12px;">${fmtNota(nota)}/10 · ${rotuloNivel(nota)}</span>`;
   }
 
-  // A avaliação da IA guarda o parágrafo "Avaliação geral: ..." no fim de
-  // "pontos a melhorar". Aqui separamos os dois só para exibir melhor.
   function separarGeral(texto) {
     const t = String(texto ?? "");
     const pos = t.indexOf(MARCADOR_GERAL);
@@ -295,7 +287,6 @@ if (exigirLogin()) {
       document.getElementById("btn-vazio-novo").addEventListener("click", () => abrir());
       return;
     }
-    // Mais recentes primeiro.
     [...items].sort((a, b) => b.id - a.id).forEach((item) => listaEl.appendChild(renderCard(item)));
   }
 

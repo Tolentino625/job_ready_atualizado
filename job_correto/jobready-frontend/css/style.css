@@ -103,8 +103,6 @@ h1, h2, h3, .brand {
 .btn-ai:hover { background: #a77932; transform: translateY(-1px); }
 .btn-ai:disabled { opacity: .7; cursor: wait; transform: none; }
 
-/* Destaque temporário para linhas recém-criadas (ex: perguntas geradas
-   pela IA), para deixar claro na tabela o que é novo e o que já existia. */
 .row-destaque { animation: destaque-fade 6s ease-out forwards; }
 @keyframes destaque-fade {
   0% { background: rgba(185, 139, 62, .22); }
@@ -222,7 +220,6 @@ tbody tr:hover { background: #FBF9F4; }
   color: var(--muted);
 }
 
-/* Modal */
 .modal-backdrop {
   display: none;
   position: fixed;
@@ -294,7 +291,6 @@ tbody tr:hover { background: #FBF9F4; }
   color: var(--navy);
 }
 
-/* Lembretes: boa leitura em telas menores */
 @media (max-width: 760px) {
   .layout { display: block; }
   .sidebar { width: 100%; padding: 18px; }

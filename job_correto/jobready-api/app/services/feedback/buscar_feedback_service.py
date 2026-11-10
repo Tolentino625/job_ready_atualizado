@@ -2,7 +2,6 @@ from app.models.feedback import Feedback
 
 
 class BuscarFeedbackService:
-    """Caso de uso: buscar um feedback pelo id, garantindo que a entrevista pertence ao usuário."""
 
     def __init__(self, feedback_id, usuario_id=None):
         self.feedback_id = feedback_id

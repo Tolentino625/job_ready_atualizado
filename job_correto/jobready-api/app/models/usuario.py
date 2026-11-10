@@ -6,7 +6,6 @@ from app.extensions import db
 
 
 class Usuario(db.Model):
-    """Model da entidade Usuário (cadastro e login)."""
 
     __tablename__ = "usuarios"
 

@@ -1,11 +1,10 @@
 from app.models.entrevista import Entrevista
 
 TIPO_SIMULACAO = "simulacao_cronometrada"
-TOLERANCIA_SEG = 5  # folga (rede/latência) antes de marcar a resposta como "fora do tempo"
+TOLERANCIA_SEG = 5
 
 
 def buscar_simulacao(entrevista_id, usuario_id):
-    """Busca a simulação garantindo que existe, é do usuário e é do tipo certo."""
     entrevista = Entrevista.buscar_por_id(entrevista_id)
     if not entrevista or entrevista.tipo != TIPO_SIMULACAO:
         raise LookupError("Simulação não encontrada.")
@@ -15,7 +14,6 @@ def buscar_simulacao(entrevista_id, usuario_id):
 
 
 def serializar(entrevista, feedback=None):
-    """Estado completo da simulação (usado ao iniciar, retomar e exibir o resultado)."""
     from datetime import datetime
 
     itens = list(entrevista.simulacao_itens)

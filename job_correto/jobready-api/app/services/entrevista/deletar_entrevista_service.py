@@ -2,7 +2,6 @@ from app.services.entrevista.buscar_entrevista_service import BuscarEntrevistaSe
 
 
 class DeletarEntrevistaService:
-    """Caso de uso: excluir uma entrevista existente (do próprio usuário)."""
 
     def __init__(self, entrevista_id, usuario_id):
         self.entrevista_id = entrevista_id

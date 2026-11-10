@@ -253,7 +253,6 @@ if (exigirLogin()) {
     }
   }
 
-  // ---------- Geração de perguntas por IA ----------
   const btnGerar = document.getElementById("btn-gerar-perguntas");
   const gerarBackdrop = document.getElementById("gerar-modal-backdrop");
   const gerarForm = document.getElementById("gerar-form");
@@ -283,10 +282,6 @@ if (exigirLogin()) {
       const geradas = payload.perguntas || [];
       gerarBackdrop.classList.remove("open");
 
-      // Não recarrega a página inteira: a tabela sempre mostra TODAS as
-      // perguntas já cadastradas (é um banco de perguntas, não um histórico
-      // desta geração). Atualizamos a lista e destacamos só as que
-      // acabaram de ser criadas por essa chamada.
       await carregarLista();
       filtroSelect.value = dados.categoria;
       filtroCategoria = dados.categoria;
@@ -303,7 +298,6 @@ if (exigirLogin()) {
     }
   });
 
-  // ---------- Responder pergunta + avaliar com IA ----------
   const responderBackdrop = document.getElementById("responder-modal-backdrop");
   const responderPerguntaTexto = document.getElementById("responder-pergunta-texto");
   const responderForm = document.getElementById("responder-form");

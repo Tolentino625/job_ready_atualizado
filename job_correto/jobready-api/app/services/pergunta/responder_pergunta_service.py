@@ -4,10 +4,6 @@ from app.services.entrevista.obter_entrevista_pratica_service import ObterEntrev
 
 
 class ResponderPerguntaService:
-    """Caso de uso: usuário autenticado responde a uma pergunta do banco de
-    perguntas. Se já existir uma resposta anterior para essa pergunta, ela é
-    sobrescrita (e a nota da IA, se houver, é invalidada, já que o texto
-    mudou)."""
 
     def __init__(self, pergunta_id, dados, usuario_id):
         self.pergunta_id = pergunta_id
@@ -19,8 +15,6 @@ class ResponderPerguntaService:
         if not texto_resposta:
             raise ValueError("O campo 'texto_resposta' é obrigatório.")
 
-        # Levanta LookupError (404) ou PermissionError (403) se a pergunta
-        # não existir ou não for do usuário.
         BuscarPerguntaService(self.pergunta_id, self.usuario_id).execute()
 
         entrevista = ObterEntrevistaPraticaService(self.usuario_id).execute()

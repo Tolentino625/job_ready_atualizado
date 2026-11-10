@@ -4,7 +4,6 @@ from app.models.entrevista import Entrevista
 
 
 class Feedback(db.Model):
-    """Model da entidade Feedback (feedback de desempenho de uma entrevista)."""
 
     __tablename__ = "feedbacks"
 
@@ -16,7 +15,6 @@ class Feedback(db.Model):
     ponto_a_melhorar = db.Column(db.String(255), nullable=True)
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # ---------- CRUD ----------
     @classmethod
     def criar(cls, entrevista_id, pontuacao, comentario=None, ponto_forte=None, ponto_a_melhorar=None):
         feedback = cls(

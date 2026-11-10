@@ -2,7 +2,6 @@ from app.models.resposta import Resposta
 
 
 class BuscarRespostaService:
-    """Caso de uso: buscar uma resposta pelo id, garantindo que a entrevista pertence ao usuário."""
 
     def __init__(self, resposta_id, usuario_id=None):
         self.resposta_id = resposta_id

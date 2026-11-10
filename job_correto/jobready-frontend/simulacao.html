@@ -70,7 +70,6 @@
 
     <div class="alert" id="alerta" style="display:none;"></div>
 
-    <!-- 1. Configuração -->
     <section id="view-setup">
       <div class="sim-card">
         <h2>Nova simulação</h2>
@@ -124,7 +123,6 @@
       </div>
     </section>
 
-    <!-- 2. Em andamento -->
     <section id="view-run" class="hidden">
       <div class="sim-card">
         <div class="sim-top">
@@ -150,7 +148,6 @@
       </div>
     </section>
 
-    <!-- 3. Avaliando -->
     <section id="view-loading" class="hidden">
       <div class="sim-card loading-box">
         <div class="spinner"></div>
@@ -159,7 +156,6 @@
       </div>
     </section>
 
-    <!-- 4. Resultado -->
     <section id="view-result" class="hidden">
       <div class="sim-card">
         <div class="score-hero">
@@ -200,9 +196,9 @@ if (exigirLogin()) {
   const $ = (id) => document.getElementById(id);
   const views = ["setup", "run", "loading", "result"];
 
-  let sim = null;          // estado atual da simulação (resposta da API)
-  let tick = null;         // intervalo do cronômetro
-  let fimEm = 0;           // timestamp local (ms) em que a pergunta atual acaba
+  let sim = null;
+  let tick = null;
+  let fimEm = 0;
   let enviando = false;
 
   function esc(v) {
@@ -234,7 +230,6 @@ if (exigirLogin()) {
     return payload;
   }
 
-  // ---------- Setup + histórico ----------
   $("setup-categoria").innerHTML = Object.entries(CATEGORIAS)
     .map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
 
@@ -281,7 +276,6 @@ if (exigirLogin()) {
     }
   });
 
-  // ---------- Execução ----------
   function pararTimer() { clearInterval(tick); tick = null; }
 
   function renderPergunta() {
@@ -301,7 +295,7 @@ if (exigirLogin()) {
 
     pararTimer();
     $("timer-row").classList.toggle("hidden", !item.cronometrada);
-    if (!item.cronometrada) return;   // sem limite: não há cronômetro
+    if (!item.cronometrada) return;
     fimEm = Date.now() + item.restante_seg * 1000;
     atualizarTimer(item.tempo_limite_seg);
     tick = setInterval(() => atualizarTimer(item.tempo_limite_seg), 250);
@@ -338,7 +332,6 @@ if (exigirLogin()) {
     } catch (err) {
       alerta(err.message);
       enviando = false;
-      // Reativa a tela para tentar de novo (o tempo já corre no servidor).
       ["btn-enviar", "btn-pular", "btn-encerrar"].forEach((id) => { $(id).disabled = false; });
       $("run-texto").disabled = false;
       if (item.cronometrada) {
@@ -353,10 +346,9 @@ if (exigirLogin()) {
   $("btn-encerrar").addEventListener("click", async () => {
     if (!confirm("Encerrar agora? As perguntas restantes contarão como sem resposta (nota 0).")) return;
     pararTimer();
-    // Envia o que já foi digitado na pergunta atual antes de finalizar.
     if (!enviando && sim.item_atual && $("run-texto").value.trim()) {
       const ok = await enviar(false, false, true);
-      if (!ok) return;   // falhou ao enviar: continua na pergunta
+      if (!ok) return;
     }
     finalizar();
   });
@@ -369,13 +361,11 @@ if (exigirLogin()) {
       renderResultado();
     } catch (err) {
       alerta(err.message);
-      // A simulação continua salva: dá para tentar de novo pelo histórico.
       sim = null; history.replaceState(null, "", location.pathname);
       mostrar("setup"); carregarHistorico();
     }
   }
 
-  // ---------- Resultado ----------
   function renderResultado() {
     mostrar("result");
     history.replaceState(null, "", `?id=${sim.id}`);
@@ -407,7 +397,6 @@ if (exigirLogin()) {
     }).join("");
   }
 
-  // Nova tentativa: mesmas perguntas e mesmo tempo, sem gerar perguntas de novo.
   async function refazer(id, botao) {
     if (botao) { botao.disabled = true; }
     try {
@@ -427,7 +416,6 @@ if (exigirLogin()) {
     mostrar("setup"); carregarHistorico(); window.scrollTo(0, 0);
   });
 
-  // ---------- Abrir/retomar ----------
   async function abrir(id) {
     try {
       sim = await api(`${API}/${id}`);
@@ -443,7 +431,6 @@ if (exigirLogin()) {
   if (idUrl) abrir(idUrl); else { mostrar("setup"); }
   carregarHistorico();
 
-  // Evita perder a simulação por engano ao fechar/recarregar durante a execução.
   window.addEventListener("beforeunload", (e) => {
     if (tick) { e.preventDefault(); e.returnValue = ""; }
   });

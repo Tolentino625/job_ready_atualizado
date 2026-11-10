@@ -41,14 +41,6 @@ def _juntar(lista, limite=255):
 
 
 class FinalizarSimulacaoService:
-    """Caso de uso: encerrar a simulação e gerar o feedback.
-
-    Faz UMA chamada ao Gemini para avaliar todas as respostas de uma vez (nota
-    + comentário por ID de resposta, resumo e pontos forte/a melhorar), grava
-    a avaliação em cada Resposta, calcula a pontuação geral (média; respostas
-    em branco valem 0), cria o Feedback e marca a entrevista como concluída.
-    É idempotente: se já estiver concluída, só devolve o resultado.
-    """
 
     def __init__(self, entrevista_id, usuario_id):
         self.entrevista_id = entrevista_id
@@ -65,7 +57,6 @@ class FinalizarSimulacaoService:
         if not any(i.respondida for i in itens):
             raise ValueError("Responda (ou pule) ao menos uma pergunta antes de finalizar.")
 
-        # Perguntas não alcançadas (usuário encerrou antes) entram como em branco.
         agora = datetime.utcnow()
         for item in itens:
             if not item.respondida:

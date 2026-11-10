@@ -3,7 +3,6 @@ from app.models.feedback import Feedback
 
 
 class CriarFeedbackService:
-    """Caso de uso: registrar o feedback de desempenho de uma entrevista do usuário autenticado."""
 
     def __init__(self, dados, usuario_id):
         self.dados = dados or {}

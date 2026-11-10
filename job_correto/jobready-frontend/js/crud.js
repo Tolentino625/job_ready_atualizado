@@ -1,20 +1,5 @@
-/**
- * Motor genérico de telas CRUD do JobReady (frontend independente).
- *
- * Cada página (ex: usuarios.html) define um objeto de configuração com o
- * recurso da API e os campos do formulário, e chama initCrudPage().
- *
- * Todas as chamadas usam fetch() contra API_BASE_URL (definido em
- * js/config.js) — este frontend não acessa o banco de dados nem gera HTML
- * no servidor; ele apenas consome a API REST já implementada no backend.
- */
 
 function initCrudPage(config) {
-  // state.items = TODOS os itens vindos da API (o backend nunca filtra por
-  // categoria/tipo). state.destacarIds guarda ids que devem aparecer
-  // realçados na tabela por alguns segundos (ex: perguntas recém-geradas
-  // pela IA), só para deixar claro ao usuário o que é novo e o que já
-  // existia antes na lista completa.
   const state = { items: [], editingId: null, destacarIds: new Set(), filtro: {} };
   const apiUrl = `${API_BASE_URL}${config.resourcePath}`;
 
@@ -52,8 +37,6 @@ function initCrudPage(config) {
         return `<td>${value}</td>`;
       })
       .join("");
-    // somenteLeitura: tela só de consulta (sem Editar/Excluir; o "+ Novo" é
-    // simplesmente omitido no HTML da página). semEditar: esconde só o "Editar".
     const acoes = config.somenteLeitura
       ? ""
       : `<td class="actions-cell">
@@ -87,17 +70,11 @@ function initCrudPage(config) {
     }
   }
 
-  // Aplica um filtro client-side (ex: { categoria: "tecnica" }). Passe {}
-  // para limpar. A tabela SEMPRE reflete o que existe no banco — isso só
-  // muda o que é exibido, não o que a API retorna.
   function setFiltro(filtro) {
     state.filtro = filtro || {};
     renderizarTabela();
   }
 
-  // Marca ids para aparecerem destacados (ex: perguntas recém-geradas pela
-  // IA) por alguns segundos, e opcionalmente reaplica o filtro para que
-  // essas linhas fiquem visíveis mesmo com filtro ativo.
   function destacarTemporario(ids, { limparFiltro = false } = {}) {
     if (limparFiltro) state.filtro = {};
     state.destacarIds = new Set(ids);
@@ -190,7 +167,6 @@ function initCrudPage(config) {
     } else if (btn.dataset.action === "delete") {
       excluir(id);
     } else if (config.onAction) {
-      // Ações extras definidas pela página (ex: "Rever", "Tentar novamente").
       config.onAction(btn.dataset.action, state.items.find((i) => i.id === id), btn);
     }
   });
@@ -204,8 +180,6 @@ function initCrudPage(config) {
 
   carregarLista();
 
-  // Interface pública para as páginas (ex: perguntas.html) reagirem a ações
-  // extras, como "Gerar perguntas com IA", sem precisar de reload da página.
   return {
     recarregar: carregarLista,
     setFiltro,

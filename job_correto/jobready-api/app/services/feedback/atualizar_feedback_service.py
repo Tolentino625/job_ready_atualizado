@@ -2,7 +2,6 @@ from app.services.feedback.buscar_feedback_service import BuscarFeedbackService
 
 
 class AtualizarFeedbackService:
-    """Caso de uso: atualizar os dados de um feedback existente (do próprio usuário)."""
 
     def __init__(self, feedback_id, dados, usuario_id):
         self.feedback_id = feedback_id

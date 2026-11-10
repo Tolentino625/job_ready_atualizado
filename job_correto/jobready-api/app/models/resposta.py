@@ -4,7 +4,6 @@ from app.models.entrevista import Entrevista
 
 
 class Resposta(db.Model):
-    """Model da entidade Resposta (resposta do usuário a uma pergunta, por voz ou texto)."""
 
     __tablename__ = "respostas"
 
@@ -12,7 +11,7 @@ class Resposta(db.Model):
     entrevista_id = db.Column(db.Integer, db.ForeignKey("entrevistas.id"), nullable=False)
     pergunta_id = db.Column(db.Integer, db.ForeignKey("perguntas.id"), nullable=False)
     texto_resposta = db.Column(db.Text, nullable=False)
-    tipo = db.Column(db.String(20), nullable=False, default="texto")  # 'voz' ou 'texto'
+    tipo = db.Column(db.String(20), nullable=False, default="texto")
     respondido_em = db.Column(db.DateTime, default=datetime.utcnow)
     nota_ia = db.Column(db.Float, nullable=True)
     comentario_ia = db.Column(db.Text, nullable=True)
@@ -20,7 +19,6 @@ class Resposta(db.Model):
 
     pergunta = db.relationship("Pergunta")
 
-    # ---------- CRUD ----------
     @classmethod
     def criar(cls, entrevista_id, pergunta_id, texto_resposta, tipo="texto"):
         resposta = cls(
@@ -53,7 +51,6 @@ class Resposta(db.Model):
     def atualizar(self, texto_resposta=None, tipo=None):
         if texto_resposta is not None:
             self.texto_resposta = texto_resposta
-            # Se o texto da resposta muda, a nota anterior perde validade.
             self.nota_ia = None
             self.comentario_ia = None
             self.avaliado_em = None

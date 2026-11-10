@@ -22,11 +22,6 @@ class CurriculoListController(MethodView):
 
     def post(self):
         try:
-            # Importante: checar pelo Content-Type, não por request.files. Um
-            # FormData enviado pelo navegador é multipart mesmo quando nenhum
-            # arquivo foi selecionado, e nesse caso request.files vem vazio
-            # (o que antes fazia cair, por engano, no branch de JSON e
-            # quebrar com um 400 bruto do Werkzeug).
             if request.mimetype == "multipart/form-data":
                 dados = request.form.to_dict()
                 arquivo = request.files.get("arquivo")
@@ -78,8 +73,6 @@ class CurriculoDetailController(MethodView):
 
 @curriculo_bp.post("/api/curriculos/<int:curriculo_id>/avaliar")
 def avaliar_curriculo(curriculo_id):
-    """Pede ao Gemini uma avaliação do currículo (pontos fortes / a
-    melhorar) e devolve o currículo já atualizado com o feedback."""
     try:
         curriculo = AvaliarCurriculoService(curriculo_id, usuario_atual().id).execute()
         return jsonify(curriculo.to_dict())
@@ -96,9 +89,6 @@ def avaliar_curriculo(curriculo_id):
     except RuntimeError as e:
         return jsonify({"erro": str(e)}), 500
     except Exception as e:
-        # Mesmo tratamento usado na geração de perguntas: garante resposta
-        # JSON com CORS em vez de um 500 "cru" (ex: chave inválida, SDK não
-        # instalado, falha de rede ao chamar o Gemini).
         return jsonify({"erro": f"Falha ao chamar o Gemini: {e}"}), 500
 
 

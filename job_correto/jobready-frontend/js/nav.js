@@ -5,6 +5,7 @@
     { href: "perguntas.html", label: "Perguntas", key: "perguntas" },
     { href: "entrevistas.html", label: "Entrevistas", key: "entrevistas" },
     { href: "respostas.html", label: "Respostas", key: "respostas" },
+    { href: "desempenho.html", label: "Desempenho", key: "desempenho" },
     { href: "feedbacks.html", label: "Feedbacks", key: "feedbacks" },
     { href: "lembretes.html", label: "Lembretes de estudo", key: "lembretes" },
   ];

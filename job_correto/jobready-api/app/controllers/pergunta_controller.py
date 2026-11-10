@@ -14,10 +14,6 @@ pergunta_bp = Blueprint("pergunta_bp", __name__)
 
 
 class PerguntaListController(MethodView):
-    """Controller (classe) responsável pela coleção /api/perguntas.
-
-    Cada usuário só vê as perguntas que ele mesmo gerou (veja
-    /api/perguntas/gerar): não há criação ou edição manual nesta tela."""
 
     def get(self):
         perguntas = ListarPerguntasService(usuario_atual().id).execute()
@@ -45,17 +41,11 @@ def gerar_perguntas():
     except RuntimeError as e:
         return jsonify({"erro": str(e)}), 500
     except Exception as e:
-        # Captura qualquer outro erro (ex: chave do Gemini inválida, falha de
-        # rede, pacote não instalado) para sempre devolver JSON com os
-        # cabeçalhos de CORS, em vez de deixar o Flask retornar um erro 500
-        # "cru" que o navegador reporta como bloqueio de CORS.
         return jsonify({"erro": f"Falha ao chamar o Gemini: {e}"}), 500
 
 
 @pergunta_bp.post("/api/perguntas/<int:pergunta_id>/responder")
 def responder_pergunta(pergunta_id):
-    """Usuário autenticado responde (ou reescreve a resposta a) uma pergunta
-    do banco. Retorna a resposta salva (sem nota, até ser avaliada)."""
     try:
         resposta = ResponderPerguntaService(
             pergunta_id, request.get_json(force=True) or {}, usuario_atual().id
@@ -70,7 +60,6 @@ def responder_pergunta(pergunta_id):
 
 
 class PerguntaDetailController(MethodView):
-    """Controller (classe) responsável pelo item /api/perguntas/<id>."""
 
     def get(self, pergunta_id):
         try:

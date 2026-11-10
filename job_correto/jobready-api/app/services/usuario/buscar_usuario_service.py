@@ -2,7 +2,6 @@ from app.models.usuario import Usuario
 
 
 class BuscarUsuarioService:
-    """Caso de uso: buscar um usuário pelo id, garantindo que é o próprio usuário autenticado."""
 
     def __init__(self, usuario_id, usuario_atual_id=None):
         self.usuario_id = usuario_id

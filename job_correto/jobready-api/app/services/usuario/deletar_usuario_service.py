@@ -2,7 +2,6 @@ from app.services.usuario.buscar_usuario_service import BuscarUsuarioService
 
 
 class DeletarUsuarioService:
-    """Caso de uso: excluir o próprio usuário autenticado."""
 
     def __init__(self, usuario_id, usuario_atual_id):
         self.usuario_id = usuario_id

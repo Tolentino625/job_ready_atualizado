@@ -3,7 +3,6 @@ from app.services.usuario.buscar_usuario_service import BuscarUsuarioService
 
 
 class AtualizarUsuarioService:
-    """Caso de uso: atualizar os dados do próprio usuário autenticado."""
 
     def __init__(self, usuario_id, dados, usuario_atual_id):
         self.usuario_id = usuario_id

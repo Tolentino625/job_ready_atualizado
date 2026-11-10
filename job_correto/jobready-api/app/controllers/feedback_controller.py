@@ -12,7 +12,6 @@ feedback_bp = Blueprint("feedback_bp", __name__)
 
 
 class FeedbackListController(MethodView):
-    """Controller (classe) responsável pela coleção /api/feedbacks."""
 
     def get(self):
         feedbacks = ListarFeedbacksService(usuario_atual().id).execute()
@@ -29,7 +28,6 @@ class FeedbackListController(MethodView):
 
 
 class FeedbackDetailController(MethodView):
-    """Controller (classe) responsável pelo item /api/feedbacks/<id>."""
 
     def get(self, feedback_id):
         try:

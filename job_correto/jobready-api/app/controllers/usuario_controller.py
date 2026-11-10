@@ -12,10 +12,8 @@ usuario_bp = Blueprint("usuario_bp", __name__)
 
 
 class UsuarioListController(MethodView):
-    """Controller (classe) responsável pela coleção /api/usuarios."""
 
     def get(self):
-        # Cada usuário só enxerga o próprio cadastro nesta listagem.
         usuarios = ListarUsuariosService(usuario_atual().id).execute()
         return jsonify([u.to_dict() for u in usuarios])
 
@@ -28,7 +26,6 @@ class UsuarioListController(MethodView):
 
 
 class UsuarioDetailController(MethodView):
-    """Controller (classe) responsável pelo item /api/usuarios/<id>."""
 
     def get(self, usuario_id):
         try:

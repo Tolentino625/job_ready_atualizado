@@ -38,7 +38,6 @@ def me():
 
 @auth_bp.post("/logout")
 def logout():
-    # O frontend também apaga o token localmente.
     from app.services.auth.auth_service import token_da_requisicao
     sair(token_da_requisicao())
     return jsonify({"mensagem": "Logout realizado com sucesso."})

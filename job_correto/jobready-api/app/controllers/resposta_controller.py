@@ -14,7 +14,6 @@ resposta_bp = Blueprint("resposta_bp", __name__)
 
 
 class RespostaListController(MethodView):
-    """Controller (classe) responsável pela coleção /api/respostas."""
 
     def get(self):
         respostas = ListarRespostasService(usuario_atual().id).execute()
@@ -31,7 +30,6 @@ class RespostaListController(MethodView):
 
 
 class RespostaDetailController(MethodView):
-    """Controller (classe) responsável pelo item /api/respostas/<id>."""
 
     def get(self, resposta_id):
         try:
@@ -75,8 +73,6 @@ resposta_bp.add_url_rule(
 
 @resposta_bp.post("/api/respostas/<int:resposta_id>/avaliar")
 def avaliar_resposta(resposta_id):
-    """Pede ao Gemini uma nota (0 a 10) e um comentário para a resposta do
-    usuário autenticado, e devolve a resposta já atualizada."""
     try:
         resposta = AvaliarRespostaService(resposta_id, usuario_atual().id).execute()
         return jsonify(resposta.to_dict())

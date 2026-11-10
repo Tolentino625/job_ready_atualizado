@@ -2,7 +2,6 @@ from app.models.curriculo import Curriculo
 
 
 class ListarCurriculosService:
-    """Caso de uso: listar os currículos do usuário autenticado."""
 
     def __init__(self, usuario_id):
         self.usuario_id = usuario_id

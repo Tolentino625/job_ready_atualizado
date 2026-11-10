@@ -1,3 +1,5 @@
+from flask import current_app
+
 from app.services.ia.gemini_client import extrair_json, gerar_conteudo
 from app.services.resposta.buscar_resposta_service import BuscarRespostaService
 
@@ -18,8 +20,6 @@ A nota deve ser um número de 0 a 10 (pode ter uma casa decimal)."""
 
 
 class AvaliarRespostaService:
-    """Caso de uso: pedir ao Gemini uma nota (0 a 10) e um comentário para
-    a resposta do usuário autenticado a uma pergunta de entrevista."""
 
     def __init__(self, resposta_id, usuario_id):
         self.resposta_id = resposta_id
@@ -44,11 +44,14 @@ class AvaliarRespostaService:
             texto_resposta=resposta.texto_resposta,
         )
 
-        response = gerar_conteudo(prompt, temperature=0.3, max_output_tokens=500)
+        response = gerar_conteudo(prompt, temperature=0.3, max_output_tokens=2048)
 
         try:
             avaliacao = extrair_json(response.text)
         except (ValueError, TypeError) as exc:
+            current_app.logger.warning(
+                "Gemini devolveu avaliação não-JSON. Texto recebido: %r", response.text
+            )
             raise RuntimeError(
                 "O Gemini retornou uma resposta inválida ao avaliar sua resposta. Tente novamente."
             ) from exc

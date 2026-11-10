@@ -6,8 +6,6 @@ from werkzeug.security import check_password_hash
 
 from app.models.usuario import Usuario
 
-# Para o projeto local, os tokens ficam em memória. Reiniciar a API encerra
-# as sessões ativas, o que é adequado para o ambiente de desenvolvimento.
 _TOKENS = {}
 
 
@@ -25,7 +23,6 @@ def autenticar(email, senha):
     except (ValueError, TypeError):
         senha_valida = False
 
-    # Compatibilidade com usuários antigos que tenham senha em texto puro.
     if not senha_valida and usuario.senha == senha:
         senha_valida = True
         usuario.definir_senha(senha)

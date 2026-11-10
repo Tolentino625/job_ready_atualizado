@@ -3,7 +3,6 @@ from app.models.resposta import Resposta
 
 
 class CriarRespostaService:
-    """Caso de uso: registrar a resposta do usuário autenticado a uma pergunta."""
 
     def __init__(self, dados, usuario_id):
         self.dados = dados or {}

@@ -4,7 +4,6 @@ from app.extensions import db
 
 
 class Curriculo(db.Model):
-    """Model da entidade Currículo (dados e anexo enviado pelo usuário)."""
 
     __tablename__ = "curriculos"
 
@@ -16,7 +15,7 @@ class Curriculo(db.Model):
     conteudo_texto = db.Column(db.Text, nullable=True)
     pontos_fortes = db.Column(db.Text, nullable=True)
     pontos_a_melhorar = db.Column(db.Text, nullable=True)
-    nota_ia = db.Column(db.Float, nullable=True)          # nota de 0 a 10 dada pela IA
+    nota_ia = db.Column(db.Float, nullable=True)
     avaliado_em = db.Column(db.DateTime, nullable=True)
     enviado_em = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -76,7 +75,6 @@ class Curriculo(db.Model):
         return self
 
     def invalidar_nota(self):
-        """A nota deixa de valer quando o conteúdo do currículo muda."""
         self.nota_ia = None
         self.avaliado_em = None
         db.session.commit()
